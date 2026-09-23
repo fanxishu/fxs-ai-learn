@@ -749,18 +749,24 @@ body {
 .judge-row { display: flex; gap: 12px; margin-top: 14px; }
 .judge-btn {
   flex: 1;
-  padding: 20px 10px;
+  padding: 16px 10px;
   border: var(--stroke);
   border-radius: 14px;
   background: var(--c-chalk);
   box-shadow: var(--shadow-soft);
   text-align: center;
   cursor: default;
+  min-height: 104px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
-.judge-btn .emoji { font-size: 40px; display: block; margin-bottom: 4px; }
+.judge-btn .emoji { font-size: 26px; display: inline-block; line-height: 1; }
 .judge-btn .txt {
   font-family: var(--font-title);
-  font-size: 20px;
+  font-size: 17px;
   letter-spacing: 2px;
 }
 .judge-btn.sel-true { background: #DBF5EF; border-color: var(--c-green); }
