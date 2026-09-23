@@ -1,0 +1,2361 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>鱼皮 AI 闯关 — 03 扩展功能与后续页面 | 怕踢课堂风 UI 原型</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+QingKe+HuangYou&family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;500;700;900&family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --c-red: #E63946;        --c-red-dark: #C92A38;
+  --c-yellow: #F4C430;     --c-yellow-dark: #D9AA1B;
+  --c-blue: #457B9D;       --c-blue-dark: #366482;
+  --c-green: #2A9D8F;      --c-green-dark: #1F7A6F;
+  --c-error: #E76F51;
+  --c-bg: #FFF9E6;         --c-card: #FFEFCB;
+  --c-ink: #1D1D1D;        --c-chalk: #FDFFFC;
+  --c-gray: #6B6B6B;       --c-purple: #9B5DE5;
+  --c-pink: #FFB3BA;
+  --stroke: 3px solid var(--c-ink);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --shadow-hard: 5px 5px 0 var(--c-ink);
+  --shadow-soft: 3px 3px 0 var(--c-ink);
+  --font-title: 'ZCOOL QingKe HuangYou', cursive;
+  --font-sub: 'ZCOOL KuaiLe', cursive;
+  --font-body: 'Noto Sans SC', sans-serif;
+  --font-en: 'Baloo 2', cursive;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font-body);
+  background: var(--c-bg);
+  color: var(--c-ink);
+  min-height: 100vh;
+  padding-bottom: 80px;
+  background-image:
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0, transparent 39px,
+      rgba(69, 123, 157, 0.06) 39px, rgba(69, 123, 157, 0.06) 40px
+    );
+}
+
+.doc-header {
+  max-width: 1480px;
+  margin: 0 auto;
+  padding: 50px 40px 10px;
+  text-align: center;
+}
+.doc-title {
+  font-family: var(--font-title);
+  font-size: 48px;
+  color: var(--c-ink);
+  text-shadow: 3px 3px 0 var(--c-yellow);
+  letter-spacing: 3px;
+}
+.doc-sub {
+  margin-top: 6px;
+  font-family: var(--font-sub);
+  font-size: 20px;
+  color: var(--c-gray);
+  letter-spacing: 1px;
+}
+.doc-badge {
+  display: inline-block;
+  margin-top: 16px;
+  padding: 8px 22px;
+  background: var(--c-purple);
+  color: var(--c-chalk);
+  font-family: var(--font-title);
+  font-size: 18px;
+  border: var(--stroke);
+  border-radius: 999px;
+  transform: rotate(-1.5deg);
+  box-shadow: var(--shadow-soft);
+  letter-spacing: 1px;
+}
+.doc-flow {
+  max-width: 1480px;
+  margin: 30px auto 0;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.flow-chip {
+  padding: 5px 14px;
+  background: var(--c-chalk);
+  border: 2px solid var(--c-ink);
+  border-radius: 999px;
+  font-family: var(--font-sub);
+  font-size: 13px;
+  box-shadow: 2px 2px 0 var(--c-ink);
+}
+.flow-chip.star { background: var(--c-yellow); }
+.flow-chip.later { background: #EEE; color: var(--c-gray); }
+
+.phone-grid {
+  max-width: 1480px;
+  margin: 40px auto 0;
+  padding: 0 40px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 36px 30px;
+  justify-items: center;
+}
+.phone-wrapper {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+}
+.phone-frame {
+  width: 375px; height: 760px;
+  background: var(--c-ink);
+  border-radius: 42px;
+  padding: 12px;
+  box-shadow: 8px 10px 0 rgba(29,29,29,0.25), var(--shadow-hard);
+  position: relative; flex-shrink: 0;
+}
+.phone-frame::before {
+  content: '';
+  position: absolute; top: 18px; left: 50%;
+  transform: translateX(-50%);
+  width: 110px; height: 26px;
+  background: #000;
+  border-radius: 0 0 14px 14px;
+  z-index: 5;
+}
+.phone-screen {
+  width: 100%; height: 100%;
+  border-radius: 30px;
+  overflow: hidden;
+  background: var(--c-bg);
+  position: relative;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0, transparent 27px,
+    rgba(69, 123, 157, 0.06) 27px, rgba(69, 123, 157, 0.06) 28px
+  );
+}
+.status-bar {
+  height: 42px;
+  display: flex; align-items: flex-end; justify-content: space-between;
+  padding: 0 18px 4px;
+  font-family: var(--font-en); font-weight: 800; font-size: 13px;
+  color: var(--c-ink);
+}
+.status-bar .icons { display: flex; gap: 4px; align-items: center; font-size: 12px; }
+.app { height: calc(100% - 42px); overflow-y: auto; padding: 8px 18px 24px; position: relative; }
+.app::-webkit-scrollbar { display: none; }
+
+.phone-tag {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--c-chalk);
+  padding: 6px 16px;
+  border: var(--stroke);
+  border-radius: 999px;
+  box-shadow: var(--shadow-soft);
+}
+.phone-tag .idx {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px;
+  background: var(--c-purple);
+  color: var(--c-chalk);
+  border: 2px solid var(--c-ink);
+  border-radius: 50%;
+  font-family: var(--font-en);
+  font-weight: 800;
+  font-size: 13px;
+}
+.phone-tag .name { font-family: var(--font-title); font-size: 16px; letter-spacing: 1px; }
+.phone-tag .label {
+  font-family: var(--font-en); font-size: 11px;
+  padding: 2px 8px; background: #EEE; color: var(--c-gray);
+  border: 2px solid var(--c-ink); border-radius: 999px;
+}
+.phone-tag .label.hot { background: var(--c-red); color: var(--c-chalk); }
+
+/* ===== 通用小组件 ===== */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 14px 24px; width: 100%;
+  font-family: var(--font-title); font-size: 18px;
+  letter-spacing: 1.5px; color: var(--c-chalk);
+  background: var(--c-red);
+  border: var(--stroke); border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-soft);
+  cursor: default; user-select: none;
+}
+.btn.btn-yellow { background: var(--c-yellow); color: var(--c-ink); }
+.btn.btn-blue { background: var(--c-blue); }
+.btn.btn-green { background: var(--c-green); }
+.btn.btn-outline { background: var(--c-chalk); color: var(--c-ink); }
+.btn.btn-sm { padding: 9px 16px; font-size: 14px; letter-spacing: 1px; width: auto; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 3px 10px;
+  background: var(--c-yellow); color: var(--c-ink);
+  border: 2px solid var(--c-ink); border-radius: 999px;
+  font-family: var(--font-en); font-weight: 700; font-size: 11px;
+  box-shadow: 1px 2px 0 var(--c-ink);
+}
+.tag.tag-red { background: var(--c-red); color: var(--c-chalk); }
+.tag.tag-blue { background: var(--c-blue); color: var(--c-chalk); }
+.tag.tag-green { background: var(--c-green); color: var(--c-chalk); }
+.tag.tag-purple { background: var(--c-purple); color: var(--c-chalk); }
+.tag.tag-pink { background: var(--c-pink); color: var(--c-ink); }
+.tag.tag-gray { background: #EEE; color: var(--c-gray); }
+
+.section-card {
+  margin-top: 14px;
+  background: var(--c-chalk);
+  border: var(--stroke);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+}
+.section-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--c-card);
+  border-bottom: var(--stroke);
+}
+.section-head .title {
+  display: flex; align-items: center; gap: 6px;
+  font-family: var(--font-title); font-size: 15px; letter-spacing: 1px;
+}
+.section-head .more {
+  font-family: var(--font-en); font-weight: 800; font-size: 11px;
+  color: var(--c-blue);
+}
+
+.tab-bar {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 64px;
+  background: var(--c-chalk);
+  border-top: var(--stroke);
+  display: flex; align-items: center; justify-content: space-around;
+  padding: 0 10px 6px;
+  z-index: 10;
+}
+.tab-bar .tab {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px;
+  font-family: var(--font-sub);
+  font-size: 11px;
+  color: var(--c-gray);
+}
+.tab-bar .tab.active { color: var(--c-red); }
+.tab-bar .tab .ico { font-size: 20px; }
+.tab-bar .tab .ico.active-wrap {
+  width: 42px; height: 32px;
+  background: var(--c-yellow);
+  border: 2px solid var(--c-ink);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  margin-top: -12px;
+  box-shadow: 2px 2px 0 var(--c-ink);
+}
+
+/* =================== 页面 A：关卡地图 =================== */
+.map-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 4px 2px 10px;
+}
+.map-topbar .user {
+  display: flex; align-items: center; gap: 8px;
+}
+.map-topbar .avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: var(--stroke);
+  background: var(--c-chalk);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+}
+.map-topbar .name { font-family: var(--font-title); font-size: 15px; }
+.map-topbar .name small {
+  display: block;
+  font-family: var(--font-en); font-weight: 700;
+  font-size: 11px; color: var(--c-gray);
+}
+.map-topbar .coin {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 12px;
+  background: var(--c-yellow);
+  border: 2px solid var(--c-ink);
+  border-radius: 999px;
+  box-shadow: var(--shadow-soft);
+  font-family: var(--font-en); font-weight: 800; font-size: 13px;
+}
+
+.map-stage {
+  margin-top: 6px;
+  padding: 14px 10px 20px;
+  border: var(--stroke);
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at 20% 30%, #DBE9F4 0, transparent 40%),
+    radial-gradient(circle at 80% 70%, #FFE0E4 0, transparent 45%),
+    linear-gradient(180deg, #E8F5EC 0%, #FFF7E0 100%);
+  box-shadow: var(--shadow-hard);
+  position: relative;
+  min-height: 460px;
+}
+.map-stage::before {
+  content: '';
+  position: absolute;
+  left: 50%; top: 18px; bottom: 18px;
+  width: 10px;
+  transform: translateX(-50%);
+  background: repeating-linear-gradient(
+    to bottom,
+    var(--c-yellow) 0, var(--c-yellow) 12px,
+    var(--c-ink) 12px, var(--c-ink) 14px,
+    var(--c-yellow) 14px, var(--c-yellow) 26px,
+    var(--c-ink) 26px, var(--c-ink) 28px
+  );
+  border-radius: 10px;
+  opacity: 0.85;
+}
+.map-stage-title {
+  display: flex; align-items: center; justify-content: center;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.map-stage-title .label {
+  padding: 6px 16px;
+  background: var(--c-red);
+  color: var(--c-chalk);
+  border: var(--stroke);
+  border-radius: 999px;
+  font-family: var(--font-title);
+  font-size: 14px;
+  box-shadow: var(--shadow-soft);
+}
+.map-stage-title .meta {
+  font-family: var(--font-en);
+  font-weight: 800;
+  font-size: 12px;
+  color: var(--c-gray);
+}
+
+.map-node {
+  position: relative;
+  display: flex; align-items: center;
+  margin-bottom: 18px;
+  z-index: 2;
+}
+.map-node.right { justify-content: flex-end; }
+.map-node .node {
+  width: 68px; height: 68px;
+  border-radius: 50%;
+  border: var(--stroke);
+  background: var(--c-chalk);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  box-shadow: var(--shadow-hard);
+  flex-shrink: 0;
+}
+.map-node .node .ico { font-size: 26px; line-height: 1; }
+.map-node .node .num {
+  font-family: var(--font-en);
+  font-weight: 800;
+  font-size: 11px;
+  margin-top: 2px;
+}
+.map-node.done .node { background: var(--c-green); color: var(--c-chalk); }
+.map-node.done .node::after {
+  content: '✓';
+  position: absolute;
+  top: -6px; right: -6px;
+  width: 26px; height: 26px;
+  background: var(--c-chalk);
+  border: 2px solid var(--c-ink);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--c-green);
+  font-size: 14px;
+  box-shadow: 1px 2px 0 var(--c-ink);
+}
+.map-node.doing .node { background: var(--c-yellow); }
+.map-node.doing .node::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  border: 3px dashed var(--c-red);
+  animation: spin 4s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.map-node.locked .node { background: #E5E5E5; opacity: 0.75; }
+.map-node.locked .node .ico { filter: grayscale(1); }
+.map-node.locked .node::after {
+  content: '🔒';
+  position: absolute;
+  bottom: -6px; right: -6px;
+  font-size: 18px;
+}
+
+.map-node .info {
+  max-width: 170px;
+  background: var(--c-chalk);
+  border: var(--stroke);
+  border-radius: 12px;
+  padding: 8px 12px;
+  margin: 0 12px;
+  box-shadow: var(--shadow-soft);
+  position: relative;
+}
+.map-node.right .info { order: -1; }
+.map-node .info .title {
+  font-family: var(--font-title);
+  font-size: 14px;
+  line-height: 1.2;
+}
+.map-node .info .meta {
+  margin-top: 3px;
+  font-family: var(--font-en);
+  font-size: 11px;
+  color: var(--c-gray);
+  display: flex; gap: 6px; align-items: center;
+}
+.map-node.right .info::after {
+  content: ''; position: absolute;
+  right: -10px; top: 50%; transform: translateY(-50%);
+  border: 5px solid transparent;
+  border-left-color: var(--c-ink);
+}
+.map-node.right .info::before {
+  content: ''; position: absolute;
+  right: -7px; top: 50%; transform: translateY(-50%);
+  border: 4px solid transparent;
+  border-left-color: var(--c-chalk);
+}
+.map-node:not(.right) .info::after {
+  content: ''; position: absolute;
+  left: -10px; top: 50%; transform: translateY(-50%);
+  border: 5px solid transparent;
+  border-right-color: var(--c-ink);
+}
+.map-node:not(.right) .info::before {
+  content: ''; position: absolute;
+  left: -7px; top: 50%; transform: translateY(-50%);
+  border: 4px solid transparent;
+  border-right-color: var(--c-chalk);
+}
+
+/* =================== 页面 B：个人中心 + 错题本 =================== */
+.profile-card {
+  margin-top: 6px;
+  padding: 18px;
+  background: linear-gradient(135deg, #FFE5E8, #FFF3C4);
+  border: var(--stroke);
+  border-radius: 20px;
+  box-shadow: var(--shadow-hard);
+  position: relative;
+  overflow: hidden;
+}
+.profile-card::after {
+  content: '🎪';
+  position: absolute;
+  bottom: -8px; right: -4px;
+  font-size: 80px; opacity: 0.15;
+}
+.profile-top {
+  display: flex; align-items: center; gap: 14px;
+}
+.profile-avatar {
+  width: 68px; height: 68px;
+  border-radius: 50%;
+  border: var(--stroke);
+  background: var(--c-chalk);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 38px;
+  box-shadow: var(--shadow-soft);
+  position: relative;
+  flex-shrink: 0;
+}
+.profile-avatar::after {
+  content: 'L3';
+  position: absolute;
+  bottom: -4px; right: -4px;
+  background: var(--c-purple);
+  color: var(--c-chalk);
+  font-family: var(--font-en);
+  font-weight: 800;
+  font-size: 10px;
+  padding: 2px 6px;
+  border: 2px solid var(--c-ink);
+  border-radius: 999px;
+}
+.profile-info { flex: 1; min-width: 0; }
+.profile-name {
+  display: flex; align-items: center; gap: 6px;
+  font-family: var(--font-title); font-size: 20px;
+}
+.profile-name .vip {
+  padding: 2px 8px;
+  background: linear-gradient(90deg, var(--c-yellow), #F8D86A);
+  border: 2px solid var(--c-ink);
+  border-radius: 6px;
+  font-family: var(--font-en);
+  font-weight: 800;
+  font-size: 10px;
+  color: var(--c-red);
+}
+.profile-desc {
+  margin-top: 4px;
+  font-family: var(--font-sub);
+  font-size: 12px;
+  color: var(--c-gray);
+}
+.profile-exp {
+  margin-top: 8px;
+  display: flex; align-items: center; gap: 8px;
+}
+.profile-exp .bar {
+  flex: 1; height: 10px;
+  background: var(--c-chalk);
+  border: 2px solid var(--c-ink);
+  border-radius: 999px;
+  padding: 1px;
+}
+.profile-exp .fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--c-purple), var(--c-red));
+  border-radius: 999px;
+}
+.profile-exp .txt {
+  font-family: var(--font-en);
+  font-weight: 800;
+  font-size: 11px;
+  color: var(--c-ink);
+  white-space: nowrap;
+}
+
+.profile-stats {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+.p-stat {
+  background: var(--c-chalk);
+  border: 2px solid var(--c-ink);
+  border-radius: 10px;
+  padding: 8px 4px;
+  text-align: center;
+  box-shadow: 1px 2px 0 var(--c-ink);
+}
+.p-stat .num {
+  font-family: var(--font-en);
+  font-weight: 800;
+  font-size: 16px;
+  color: var(--c-red);
+  line-height: 1;
+}
+.p-stat .lbl {
+  font-family: var(--font-sub);
+  font-size: 10px;
+  color: var(--c-gray);
+  margin-top: 3px;
+}
+
+.menu-grid {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+.menu-item {
+  background: var(--c-chalk);
+  border: var(--stroke);
+  border-radius: 14px;
+  padding: 14px 6px;
+  text-align: center;
+  box-shadow: var(--shadow-soft);
+  cursor: default;
+}
+.menu-item .ico { font-size: 26px; }
+.menu-item .lbl {
+  margin-top: 6px;
+  font-family: var(--font-sub);
+  font-size: 12px;
+}
+.menu-item.hi { background: var(--c-yellow); position: relative; }
+.menu-item.hi::after {
+  content: 'NEW';
+  position: absolute;
+  top: 4px; right: 4px;
+  font-family: var(--font-en);
+  font-weight: 800;
+  font-size: 9px;
+  padding: 1px 4px;
+  background: var(--c-red);
+  color: var(--c-chalk);
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.wrong-list { padding: 4px 0; }
+.wrong-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 2px dashed rgba(0,0,0,0.1);
+}
+.wrong-item:last-child { border-bottom: none; }
+.wrong-subj {
+  width: 42px; height: 42px;
+  border: 2px solid var(--c-ink);
+  border-radius: 10px;
+  background: var(--c-pink);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.wrong-item:nth-child(2) .wrong-subj { background: #DBE9F4; }
+.wrong-item:nth-child(3) .wrong-subj { background: #D9F2ED; }
+.wrong-body { flex: 1; min-width: 0; }
+.wrong-q {
+  font-family: var(--font-sub);
+  font-size: 13px;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.wrong-meta {
+  margin-top: 4px;
+  display: flex; gap: 8px; align-items: center;
+  font-family: var(--font-en);
+  font-size: 10px;
+  color: var(--c-gray);
+}
+.wrong-retry {
+  padding: 5px 10px;
+  background: var(--c-red);
+  color: var(--c-chalk);
+  border: 2px solid var(--c-ink);
+  border-radius: 8px;
+  font-family: var(--font-title);
+  font-size: 11px;
+  box-shadow: 1px 2px 0 var(--c-ink);
+  flex-shrink: 0;
+}
+
+/* =================== 页面 C：分享海报 =================== */
+.poster-wrap {
+  padding: 6px 2px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.poster {
+  width: 300px;
+  background: var(--c-card);
+  border: var(--stroke);
+  border-radius: 22px;
+  padding: 16px 14px;
+  box-shadow: 8px 8px 0 rgba(230,57,70,0.3), var(--shadow-hard);
+  position: relative;
+  transform: rotate(-1.2deg);
+}
+.poster::before {
+  content: '';
+  position: absolute;
+  top: -12px; left: 50%;
+  transform: translateX(-50%) rotate(-4deg);
+  width: 130px; height: 26px;
+  background: rgba(230, 57, 70, 0.55);
+}
+.poster-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-bottom: 10px;
+  border-bottom: 2px dashed var(--c-ink);
+}
+.poster-logo {
+  display: flex; align-items: center; gap: 6px;
+}
+.poster-logo .ico {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--c-red);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  color: var(--c-chalk);
+  border: 2px solid var(--c-ink);
+}
+.poster-logo .name { font-family: var(--font-title); font-size: 14px; }
+.poster-date {
+  font-family: var(--font-en);
+  font-weight: 800;
+  font-size: 10px;
+  color: var(--c-gray);
+}
+
+.poster-hero {
+  margin: 14px 0;
+  padding: 18px 16px 16px;
+  background: linear-gradient(135deg, #FFE5E8, #FFF3C4);
+  border: 2px solid var(--c-ink);
+  border-radius: 16px;
+  text-align: center;
+  position: relative;
+}
+.poster-hero::before, .poster-hero::after {
+  position: absolute;
+  font-size: 38px;
+  opacity: 0.4;
+}
+.poster-hero::before { content: '🎉'; top: 4px; left: 6px; transform: rotate(-15deg); }
+.poster-hero::after { content: '🏆'; top: 4px; right: 6px; transform: rotate(15deg); }
+
+.poster-topic {
+  font-family: var(--font-title);
+  font-size: 15px;
+  letter-spacing: 1px;
+}
+.poster-score-row {
+  margin: 10px 0 0;
+  display: flex; align-items: center; justify-content: center;
+  gap: 16px;
+}
+.poster-score .big {
+  font-family: var(--font-en);
+  font-weight: 800;
+  font-size: 44px;
+  color: var(--c-red);
+  line-height: 1;
+  text-shadow: 2px 2px 0 var(--c-yellow);
+}
+.poster-score .lbl {
+  font-family: var(--font-title);
+  font-size: 11px;
+  margin-top: 2px;
+  letter-spacing: 1px;
+}
+.poster-divider {
+  width: 2px;
+  height: 48px;
+  background: var(--c-ink);
+  opacity: 0.2;
+}
+.poster-grade {
+  display: flex; flex-direction: column; align-items: center;
+}
+.poster-grade .letter {
+  font-family: var(--font-title);
+  font-size: 40px;
+  color: var(--c-purple);
+  line-height: 1;
+}
+.poster-grade .stars {
+  margin-top: 2px;
+  letter-spacing: -3px;
+  font-size: 16px;
+}
+
+.poster-3stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-top: 14px;
+}
+.ps {
+  background: var(--c-chalk);
+  border: 2px solid var(--c-ink);
+  border-radius: 8px;
+  padding: 6px 2px;
+  text-align: center;
+}
+.ps .n {
+  font-family: var(--font-en);
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--c-blue);
+}
+.ps:nth-child(2) .n { color: var(--c-green); }
+.ps:nth-child(3) .n { color: var(--c-red); }
+.ps .l {
+  font-family: var(--font-sub);
+  font-size: 10px;
+  color: var(--c-gray);
+}
+
+.poster-quote {
+  margin-top: 14px;
+  padding: 12px 12px;
+  background: var(--c-chalk);
+  border: 2px solid var(--c-ink);
+  border-left: 6px solid var(--c-red);
+  border-radius: 10px;
+  font-family: var(--font-sub);
+  font-size: 12px;
+  line-height: 1.6;
+  position: relative;
+}
+.poster-quote::before {
+  content: '「';
+  position: absolute;
+  top: -8px; left: 6px;
+  font-family: var(--font-title);
+  font-size: 28px;
+  color: var(--c-red);
+  background: var(--c-card);
+  padding: 0 4px;
+}
+
+.poster-bottom {
+  margin-top: 14px;
+  display: flex; align-items: center; gap: 12px;
+  padding-top: 12px;
+  border-top: 2px dashed var(--c-ink);
+}
+.poster-qr {
+  width: 62px; height: 62px;
+  background: var(--c-chalk);
+  border: 2px solid var(--c-ink);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 30px;
+  flex-shrink: 0;
+  box-shadow: 1px 2px 0 var(--c-ink);
+}
+.poster-slogan { flex: 1; min-width: 0; }
+.poster-slogan .big {
+  font-family: var(--font-title);
+  font-size: 13px;
+  letter-spacing: 1px;
+}
+.poster-slogan .small {
+  margin-top: 3px;
+  font-family: var(--font-sub);
+  font-size: 10px;
+  color: var(--c-gray);
+  line-height: 1.3;
+}
+
+.post-actions {
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* =================== 页面 D：历史记录时间线 =================== */
+.timeline {
+  margin: 10px 4px;
+  padding: 0 0 0 28px;
+  position: relative;
+}
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 8px; top: 6px; bottom: 6px;
+  width: 4px;
+  background: repeating-linear-gradient(
+    to bottom,
+    var(--c-yellow) 0 10px,
+    transparent 10px 18px
+  );
+  border-radius: 4px;
+}
+.tl-item {
+  position: relative;
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  background: var(--c-chalk);
+  border: var(--stroke);
+  border-radius: 14px;
+  box-shadow: var(--shadow-soft);
+}
+.tl-item::before {
+  content: '';
+  position: absolute;
+  left: -26px; top: 18px;
+  width: 18px; height: 18px;
+  background: var(--c-chalk);
+  border: 3px solid var(--c-red);
+  border-radius: 50%;
+  box-shadow: 2px 2px 0 var(--c-ink);
+}
+.tl-item.good::before { border-color: var(--c-green); }
+.tl-item.bad::before { border-color: var(--c-error); }
+.tl-item.normal::before { border-color: var(--c-yellow); }
+
+.tl-date {
+  display: flex; align-items: center; justify-content: space-between;
+  font-family: var(--font-en);
+  font-weight: 800;
+  font-size: 11px;
+  color: var(--c-gray);
+  padding-bottom: 6px;
+  margin-bottom: 6px;
+  border-bottom: 2px dashed rgba(0,0,0,0.1);
+}
+.tl-title {
+  font-family: var(--font-title);
+  font-size: 14px;
+  line-height: 1.25;
+}
+.tl-info {
+  margin-top: 6px;
+  display: flex; gap: 8px; align-items: center;
+  flex-wrap: wrap;
+}
+
+.filter-bar {
+  margin-top: 6px;
+  display: flex; gap: 6px; flex-wrap: wrap;
+  padding: 0 2px;
+}
+.filter-bar .chip {
+  padding: 5px 12px;
+  background: var(--c-chalk);
+  border: 2px solid var(--c-ink);
+  border-radius: 999px;
+  font-family: var(--font-sub);
+  font-size: 12px;
+  box-shadow: 1px 2px 0 var(--c-ink);
+}
+.filter-bar .chip.active { background: var(--c-red); color: var(--c-chalk); }
+
+/* =================== 页面 E/F：欢迎引导页（3张合并两张） =================== */
+.welcome-wrap {
+  height: 100%;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 16px;
+  padding: 16px 22px;
+  text-align: center;
+}
+.welcome-mascot {
+  width: 180px; height: 180px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FFE5E8, #FFF3C4);
+  border: var(--stroke);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 90px;
+  box-shadow: var(--shadow-hard);
+  position: relative;
+}
+.welcome-mascot::after {
+  content: '';
+  position: absolute; inset: 8px;
+  border-radius: 50%;
+  border: 3px dashed rgba(230,57,70,0.5);
+  animation: spin 6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.welcome-idx {
+  font-family: var(--font-en);
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 2px;
+  color: var(--c-red);
+  padding: 3px 12px;
+  border: 2px solid var(--c-ink);
+  border-radius: 999px;
+  background: var(--c-yellow);
+  box-shadow: var(--shadow-soft);
+}
+.welcome-title {
+  font-family: var(--font-title);
+  font-size: 30px;
+  letter-spacing: 3px;
+  line-height: 1.2;
+  text-shadow: 2px 2px 0 var(--c-yellow);
+}
+.welcome-desc {
+  max-width: 280px;
+  font-family: var(--font-sub);
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--c-gray);
+}
+.welcome-bullets {
+  width: 100%;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.wb {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px;
+  background: var(--c-chalk);
+  border: var(--stroke);
+  border-radius: 12px;
+  box-shadow: var(--shadow-soft);
+  text-align: left;
+}
+.wb .ico {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--c-card);
+  border: 2px solid var(--c-ink);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.wb .txt { flex: 1; }
+.wb .txt .t {
+  font-family: var(--font-title); font-size: 14px; letter-spacing: 1px;
+}
+.wb .txt .d {
+  font-family: var(--font-sub);
+  font-size: 11px;
+  color: var(--c-gray);
+  margin-top: 1px;
+}
+.welcome-dots {
+  display: flex; gap: 6px;
+}
+.welcome-dots .d {
+  width: 10px; height: 10px;
+  background: #EEE;
+  border: 2px solid var(--c-ink);
+  border-radius: 50%;
+}
+.welcome-dots .d.active {
+  width: 28px;
+  background: var(--c-red);
+  border-radius: 999px;
+}
+
+/* 登录页 */
+.login-logo {
+  margin-top: 18px;
+  display: flex; align-items: center; justify-content: center;
+  gap: 10px;
+}
+.login-logo .ico {
+  width: 62px; height: 62px;
+  border-radius: 50%;
+  background: var(--c-red);
+  color: var(--c-chalk);
+  font-size: 34px;
+  display: flex; align-items: center; justify-content: center;
+  border: var(--stroke);
+  box-shadow: var(--shadow-hard);
+}
+.login-logo .t {
+  text-align: left;
+}
+.login-logo .t .big {
+  font-family: var(--font-title);
+  font-size: 28px;
+  letter-spacing: 2px;
+}
+.login-logo .t .small {
+  font-family: var(--font-sub);
+  font-size: 12px;
+  color: var(--c-gray);
+}
+.login-card {
+  margin-top: 24px;
+  padding: 22px 18px;
+  background: var(--c-chalk);
+  border: var(--stroke);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-hard);
+}
+.login-title {
+  font-family: var(--font-title);
+  font-size: 20px;
+  letter-spacing: 1px;
+  margin-bottom: 14px;
+}
+.login-input {
+  margin-bottom: 12px;
+}
+.login-input label {
+  display: block;
+  margin-bottom: 6px;
+  font-family: var(--font-sub);
+  font-size: 12px;
+  color: var(--c-gray);
+}
+.login-input input {
+  width: 100%;
+  padding: 12px 14px;
+  border: var(--stroke);
+  border-radius: var(--radius-sm);
+  background: var(--c-bg);
+  font-family: var(--font-body);
+  font-size: 14px;
+  box-shadow: var(--shadow-soft);
+}
+.login-options {
+  display: flex; align-items: center; justify-content: space-between;
+  margin: 4px 2px 14px;
+  font-family: var(--font-sub);
+  font-size: 12px;
+  color: var(--c-gray);
+}
+.login-options .rm {
+  display: flex; align-items: center; gap: 4px;
+}
+.login-divider {
+  margin: 18px 0 14px;
+  display: flex; align-items: center; gap: 10px;
+  color: var(--c-gray);
+  font-family: var(--font-en);
+  font-weight: 800;
+  font-size: 11px;
+}
+.login-divider::before, .login-divider::after {
+  content: '';
+  flex: 1;
+  height: 2px;
+  background: rgba(0,0,0,0.1);
+}
+.third-login {
+  display: flex; justify-content: center; gap: 14px;
+}
+.third-login .t-btn {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  border: var(--stroke);
+  background: var(--c-chalk);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  box-shadow: var(--shadow-soft);
+}
+.login-footer {
+  margin-top: 18px;
+  text-align: center;
+  font-family: var(--font-sub);
+  font-size: 11px;
+  color: var(--c-gray);
+  line-height: 1.6;
+}
+
+/* =================== 页面 G：PK 对战页 =================== */
+.pk-vs {
+  margin-top: 6px;
+  padding: 16px 14px;
+  background: linear-gradient(135deg, #FFE5E8 0%, #DBE9F4 100%);
+  border: var(--stroke);
+  border-radius: 20px;
+  box-shadow: var(--shadow-hard);
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 6px;
+}
+.pk-player {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center;
+  position: relative;
+}
+.pk-player .avatar {
+  width: 62px; height: 62px;
+  border-radius: 50%;
+  border: var(--stroke);
+  background: var(--c-chalk);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px;
+  box-shadow: var(--shadow-soft);
+}
+.pk-player.right .avatar { background: #FFE5E8; }
+.pk-player .name {
+  margin-top: 6px;
+  font-family: var(--font-title);
+  font-size: 14px;
+  letter-spacing: 1px;
+}
+.pk-player .lv {
+  margin-top: 2px;
+  font-family: var(--font-en);
+  font-weight: 800;
+  font-size: 10px;
+  padding: 1px 6px;
+  background: var(--c-purple);
+  color: var(--c-chalk);
+  border-radius: 4px;
+  border: 2px solid var(--c-ink);
+}
+.pk-player .score {
+  margin-top: 6px;
+  font-family: var(--font-en);
+  font-weight: 800;
+  font-size: 24px;
+  color: var(--c-red);
+}
+.pk-player.right .score { color: var(--c-blue); }
+.pk-mid {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+}
+.pk-mid .vs {
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  background: var(--c-red);
+  color: var(--c-chalk);
+  border: var(--stroke);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-title);
+  font-size: 22px;
+  box-shadow: var(--shadow-soft);
+  transform: rotate(-6deg);
+}
+.pk-mid .timer {
+  margin-top: 8px;
+  font-family: var(--font-en);
+  font-weight: 800;
+  font-size: 14px;
+  padding: 3px 10px;
+  background: var(--c-yellow);
+  border: 2px solid var(--c-ink);
+  border-radius: 999px;
+  box-shadow: var(--shadow-soft);
+}
+
+.pk-qcard {
+  margin-top: 14px;
+  padding: 16px 14px 14px;
+  background: var(--c-chalk);
+  border: var(--stroke);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-hard);
+}
+.pk-qcard .head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 2px dashed rgba(0,0,0,0.1);
+}
+.pk-qcard .head .q-tag {
+  font-family: var(--font-en);
+  font-weight: 800;
+  font-size: 11px;
+  padding: 3px 10px;
+  background: var(--c-purple);
+  color: var(--c-chalk);
+  border: 2px solid var(--c-ink);
+  border-radius: 6px;
+}
+.pk-qcard .head .round {
+  font-family: var(--font-title);
+  font-size: 14px;
+}
+.pk-qcard .q {
+  font-family: var(--font-sub);
+  font-size: 15px;
+  line-height: 1.65;
+  padding-bottom: 10px;
+}
+
+.pk-opt {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  background: var(--c-chalk);
+  border: 2px solid var(--c-ink);
+  border-radius: 10px;
+  box-shadow: 1px 2px 0 var(--c-ink);
+  margin-bottom: 8px;
+  position: relative;
+  overflow: hidden;
+}
+.pk-opt .k {
+  width: 26px; height: 26px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--c-blue);
+  color: var(--c-chalk);
+  border: 2px solid var(--c-ink);
+  border-radius: 6px;
+  font-family: var(--font-en);
+  font-weight: 800;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+.pk-opt .t { flex: 1; font-size: 13px; }
+.pk-opt .left-bar {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 64%;
+  background: rgba(69, 123, 157, 0.15);
+}
+.pk-opt .pct {
+  font-family: var(--font-en);
+  font-weight: 800;
+  font-size: 12px;
+  color: var(--c-gray);
+  flex-shrink: 0;
+}
+.pk-opt.you {
+  background: #FFE0E2;
+  border-color: var(--c-red);
+}
+.pk-opt.you .k { background: var(--c-red); }
+.pk-opt.you::after {
+  content: '你';
+  position: absolute;
+  top: 4px; right: 6px;
+  font-family: var(--font-en);
+  font-weight: 800;
+  font-size: 9px;
+  padding: 1px 5px;
+  background: var(--c-red);
+  color: var(--c-chalk);
+  border-radius: 4px;
+}
+.pk-opt.correct-ans {
+  background: #E9FAF6;
+  border-color: var(--c-green);
+}
+.pk-opt.correct-ans::after {
+  content: '✅答案';
+  position: absolute;
+  top: 4px; right: 6px;
+  font-family: var(--font-en);
+  font-weight: 800;
+  font-size: 9px;
+  padding: 1px 5px;
+  background: var(--c-green);
+  color: var(--c-chalk);
+  border-radius: 4px;
+}
+
+.pk-actions { margin-top: 14px; }
+.pk-progress {
+  margin-top: 10px;
+  display: flex; gap: 4px;
+}
+.pk-progress .round-dot {
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: #EEE;
+  border: 2px solid var(--c-ink);
+}
+.pk-progress .round-dot.won { background: var(--c-green); }
+.pk-progress .round-dot.lost { background: var(--c-red); }
+.pk-progress .round-dot.ing { background: var(--c-yellow); }
+
+/* =================== 页面 H：成就徽章墙 + 弹窗 =================== */
+.ach-stats {
+  margin-top: 6px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.ach-stat {
+  background: var(--c-chalk);
+  border: var(--stroke);
+  border-radius: 12px;
+  padding: 10px 6px;
+  text-align: center;
+  box-shadow: var(--shadow-soft);
+}
+.ach-stat .n {
+  font-family: var(--font-en);
+  font-weight: 800;
+  font-size: 20px;
+  color: var(--c-yellow-dark);
+  line-height: 1;
+}
+.ach-stat:nth-child(2) .n { color: var(--c-purple); }
+.ach-stat:nth-child(3) .n { color: var(--c-red); }
+.ach-stat .l {
+  margin-top: 4px;
+  font-family: var(--font-sub);
+  font-size: 11px;
+  color: var(--c-gray);
+}
+.ach-bar-all {
+  margin-top: 8px;
+}
+.ach-bar-all .lbl {
+  display: flex; justify-content: space-between;
+  margin-bottom: 4px;
+  font-family: var(--font-en);
+  font-weight: 800;
+  font-size: 11px;
+  color: var(--c-gray);
+}
+.ach-bar-all .bar {
+  height: 12px;
+  background: var(--c-chalk);
+  border: 2px solid var(--c-ink);
+  border-radius: 999px;
+  padding: 1px;
+  box-shadow: 1px 2px 0 var(--c-ink);
+}
+.ach-bar-all .fill {
+  height: 100%;
+  width: 38%;
+  background: linear-gradient(90deg, var(--c-yellow), var(--c-red));
+  border-radius: 999px;
+}
+
+.ach-cat {
+  margin-top: 14px;
+  padding: 0 2px;
+}
+.ach-cat-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 8px;
+}
+.ach-cat-head .title {
+  display: flex; align-items: center; gap: 6px;
+  font-family: var(--font-title);
+  font-size: 15px;
+  letter-spacing: 1px;
+}
+.ach-cat-head .title .emoji { font-size: 18px; }
+.ach-cat-head .cnt {
+  font-family: var(--font-en);
+  font-weight: 800;
+  font-size: 11px;
+  color: var(--c-gray);
+}
+.ach-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.ach {
+  aspect-ratio: 1;
+  background: var(--c-chalk);
+  border: var(--stroke);
+  border-radius: 14px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 3px;
+  box-shadow: var(--shadow-soft);
+  position: relative;
+  padding: 6px;
+}
+.ach .medal {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: var(--c-yellow);
+  border: 3px solid var(--c-ink);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  position: relative;
+  box-shadow: inset 0 0 0 3px rgba(255,255,255,0.4);
+}
+.ach.gold .medal { background: linear-gradient(135deg, #F8D86A, var(--c-yellow)); }
+.ach.silver .medal { background: linear-gradient(135deg, #EEE, #CFCFCF); }
+.ach.bronze .medal { background: linear-gradient(135deg, #E5B288, #B8845A); }
+.ach.locked { opacity: 0.65; }
+.ach.locked .medal {
+  background: #EEE;
+  filter: grayscale(1);
+}
+.ach.locked .medal::after {
+  content: '🔒';
+  position: absolute;
+  bottom: -8px; right: -8px;
+  font-size: 16px;
+  filter: none;
+}
+.ach.hot::before {
+  content: 'NEW';
+  position: absolute;
+  top: -6px; right: -6px;
+  font-family: var(--font-en);
+  font-weight: 800;
+  font-size: 9px;
+  padding: 1px 5px;
+  background: var(--c-red);
+  color: var(--c-chalk);
+  border: 2px solid var(--c-ink);
+  border-radius: 6px;
+}
+.ach .name {
+  font-family: var(--font-sub);
+  font-size: 11px;
+  line-height: 1.2;
+  text-align: center;
+}
+.ach .rarity {
+  font-family: var(--font-en);
+  font-weight: 800;
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid var(--c-ink);
+  letter-spacing: 0.5px;
+}
+.ach .rarity.r { background: var(--c-red); color: var(--c-chalk); }
+.ach .rarity.sr { background: var(--c-purple); color: var(--c-chalk); }
+.ach .rarity.n { background: var(--c-chalk); color: var(--c-gray); }
+
+/* 弹窗组件 */
+.modal-wrap {
+  position: absolute;
+  inset: 0;
+  background: rgba(29, 29, 29, 0.55);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  z-index: 20;
+}
+.modal {
+  width: 100%;
+  background: var(--c-chalk);
+  border: var(--stroke);
+  border-radius: 20px;
+  padding: 20px 18px 18px;
+  box-shadow: var(--shadow-hard);
+  position: relative;
+  animation: pop 0.35s cubic-bezier(.17,.89,.32,1.49);
+}
+@keyframes pop {
+  from { transform: scale(0.7); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.modal .close {
+  position: absolute;
+  top: 10px; right: 10px;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--c-red);
+  color: var(--c-chalk);
+  border: 2px solid var(--c-ink);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  box-shadow: 1px 2px 0 var(--c-ink);
+}
+.modal .icon-huge {
+  width: 88px; height: 88px;
+  margin: -40px auto 10px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--c-yellow), var(--c-red));
+  border: var(--stroke);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 48px;
+  box-shadow: var(--shadow-hard);
+  position: relative;
+}
+.modal .icon-huge::after {
+  content: '';
+  position: absolute;
+  inset: -10px;
+  border-radius: 50%;
+  border: 3px dashed var(--c-yellow);
+  animation: spin 5s linear infinite;
+}
+.modal .m-title {
+  text-align: center;
+  font-family: var(--font-title);
+  font-size: 24px;
+  letter-spacing: 2px;
+  margin-top: 6px;
+  text-shadow: 2px 2px 0 var(--c-yellow);
+}
+.modal .m-sub {
+  text-align: center;
+  margin-top: 4px;
+  font-family: var(--font-sub);
+  font-size: 13px;
+  color: var(--c-gray);
+}
+.modal .m-body {
+  margin: 14px 0;
+  padding: 12px 14px;
+  background: var(--c-card);
+  border: 2px solid var(--c-ink);
+  border-radius: 12px;
+  font-family: var(--font-sub);
+  font-size: 13px;
+  line-height: 1.75;
+}
+.modal .m-actions {
+  display: flex; flex-direction: column; gap: 8px;
+  margin-top: 12px;
+}
+
+/* ====== 响应式 ====== */
+@media (max-width: 1320px) {
+  .phone-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 880px) {
+  .phone-grid { grid-template-columns: 1fr; }
+  .phone-frame { width: 350px; height: 720px; }
+}
+
+.doc-footer {
+  max-width: 1480px;
+  margin: 70px auto 0;
+  padding: 30px 40px;
+  text-align: center;
+  font-family: var(--font-sub);
+  color: var(--c-gray);
+  font-size: 14px;
+  line-height: 1.8;
+}
+.doc-footer .back {
+  display: inline-block;
+  margin-bottom: 14px;
+  padding: 8px 20px;
+  background: var(--c-ink);
+  color: var(--c-chalk);
+  border-radius: 999px;
+  font-family: var(--font-title);
+  font-size: 14px;
+  letter-spacing: 1px;
+  box-shadow: var(--shadow-soft);
+}
+</style>
+</head>
+<body>
+
+<div class="doc-header">
+  <h1 class="doc-title">🎪 扩展功能 & 后续迭代页面</h1>
+  <div class="doc-sub">鱼皮 AI 闯关学习小程序 · 03 扩展功能原型（8 页）</div>
+  <div class="doc-badge">💎 后续迭代 · 非 MVP 首发</div>
+</div>
+
+<div class="doc-flow">
+  <span class="flow-chip star">⭐ MVP 已完成</span>
+  <span class="flow-chip">🗺️ 关卡地图</span>
+  <span class="flow-chip">👤 个人中心</span>
+  <span class="flow-chip">📤 分享海报</span>
+  <span class="flow-chip later">⏳ 更多迭代中</span>
+</div>
+
+<div class="phone-grid">
+
+  <!-- A：关卡地图 -->
+  <div class="phone-wrapper">
+    <div class="phone-tag">
+      <span class="idx">A</span>
+      <span class="name">🗺️ 关卡地图页</span>
+      <span class="label">PAGE 1/8</span>
+    </div>
+    <div class="phone-frame">
+      <div class="phone-screen">
+        <div class="status-bar">
+          <span>9:48</span><span class="icons">📶 5G 🔋 82%</span>
+        </div>
+        <div class="app">
+          <div class="map-topbar">
+            <div class="user">
+              <div class="avatar">🐟</div>
+              <div class="name">
+                鱼皮同学
+                <small>Lv.3 · XP 860/1200</small>
+              </div>
+            </div>
+            <div class="coin">🪙 1,024</div>
+          </div>
+
+          <div class="map-stage">
+            <div class="map-stage-title">
+              <span class="label">📚 第 1 章 · 计算机网络基础</span>
+              <span class="meta">进度 3/8</span>
+            </div>
+
+            <div class="map-node done">
+              <div class="node"><span class="ico">🌐</span><span class="num">1-1</span></div>
+              <div class="info">
+                <div class="title">OSI 七层模型入门</div>
+                <div class="meta"><span>⭐ 95</span><span>📝 5题</span><span>✅ 满分</span></div>
+              </div>
+            </div>
+
+            <div class="map-node done right">
+              <div class="node"><span class="ico">📡</span><span class="num">1-2</span></div>
+              <div class="info">
+                <div class="title">TCP/IP 四层模型</div>
+                <div class="meta"><span>⭐ 80</span><span>📝 5题</span><span>✅ 通过</span></div>
+              </div>
+            </div>
+
+            <div class="map-node doing">
+              <div class="node"><span class="ico">🤝</span><span class="num">1-3</span></div>
+              <div class="info">
+                <div class="title">TCP 三次握手 ⭐</div>
+                <div class="meta"><span>👆 进行中</span><span style="color:var(--c-red);">🔥 当前关卡</span></div>
+              </div>
+            </div>
+
+            <div class="map-node locked right">
+              <div class="node"><span class="ico">👋</span><span class="num">1-4</span></div>
+              <div class="info">
+                <div class="title">TCP 四次挥手</div>
+                <div class="meta"><span>🔒 未解锁</span><span>需完成1-3</span></div>
+              </div>
+            </div>
+
+            <div class="map-node locked">
+              <div class="node"><span class="ico">📦</span><span class="num">1-5</span></div>
+              <div class="info">
+                <div class="title">UDP 协议详解</div>
+                <div class="meta"><span>🔒 需完成1-4</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <div style="padding:8px 10px;background:var(--c-chalk);border:2px solid var(--c-ink);border-radius:10px;box-shadow:var(--shadow-soft);font-family:var(--font-title);font-size:13px;display:flex;align-items:center;gap:6px;">
+              <span>👈</span>上一章
+            </div>
+            <div style="padding:8px 10px;background:var(--c-blue);color:var(--c-chalk);border:2px solid var(--c-ink);border-radius:10px;box-shadow:var(--shadow-soft);font-family:var(--font-title);font-size:13px;display:flex;align-items:center;gap:6px;justify-content:flex-end;">
+              下一章<span>👉</span>
+            </div>
+          </div>
+
+          <div style="height:60px;"></div>
+          <div class="tab-bar">
+            <div class="tab"><span class="ico">🏠</span>首页</div>
+            <div class="tab active"><span class="ico active-wrap">🗺️</span>闯关</div>
+            <div class="tab"><span class="ico">📚</span>错题</div>
+            <div class="tab"><span class="ico">👤</span>我的</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- B：个人中心 + 错题本 -->
+  <div class="phone-wrapper">
+    <div class="phone-tag">
+      <span class="idx">B</span>
+      <span class="name">👤 个人中心 + 错题本</span>
+      <span class="label">PAGE 2/8</span>
+    </div>
+    <div class="phone-frame">
+      <div class="phone-screen">
+        <div class="status-bar">
+          <span>9:49</span><span class="icons">📶 5G 🔋 81%</span>
+        </div>
+        <div class="app">
+          <div class="app-nav" style="padding-top:4px;">
+            <span style="font-family:var(--font-title);font-size:19px;letter-spacing:1px;">🎒 我的书包</span>
+            <div style="display:flex;gap:6px;">
+              <div style="width:34px;height:34px;border:2px solid var(--c-ink);border-radius:9px;background:var(--c-chalk);display:flex;align-items:center;justify-content:center;box-shadow:1px 2px 0 var(--c-ink);font-size:15px;">⚙️</div>
+            </div>
+          </div>
+
+          <div class="profile-card">
+            <div class="profile-top">
+              <div class="profile-avatar">🐟</div>
+              <div class="profile-info">
+                <div class="profile-name">
+                  鱼皮同学
+                  <span class="vip">VIP · MVP</span>
+                </div>
+                <div class="profile-desc">怕踢中学 · 初三年级 · 学号 20260001</div>
+                <div class="profile-exp">
+                  <div class="bar"><div class="fill" style="width:72%;"></div></div>
+                  <span class="txt">860/1200</span>
+                </div>
+              </div>
+            </div>
+            <div class="profile-stats">
+              <div class="p-stat"><div class="num">24</div><div class="lbl">闯关数</div></div>
+              <div class="p-stat"><div class="num">84%</div><div class="lbl">正确率</div></div>
+              <div class="p-stat"><div class="num">14</div><div class="lbl">连续打卡</div></div>
+              <div class="p-stat"><div class="num">8</div><div class="lbl">成就</div></div>
+            </div>
+          </div>
+
+          <div class="menu-grid">
+            <div class="menu-item hi"><div class="ico">📕</div><div class="lbl">错题本</div></div>
+            <div class="menu-item"><div class="ico">⭐</div><div class="lbl">收藏</div></div>
+            <div class="menu-item"><div class="ico">🏆</div><div class="lbl">成就</div></div>
+            <div class="menu-item"><div class="ico">📊</div><div class="lbl">数据</div></div>
+            <div class="menu-item"><div class="ico">📤</div><div class="lbl">分享</div></div>
+            <div class="menu-item"><div class="ico">🎁</div><div class="lbl">任务</div></div>
+            <div class="menu-item"><div class="ico">💬</div><div class="lbl">反馈</div></div>
+            <div class="menu-item"><div class="ico">🎨</div><div class="lbl">皮肤</div></div>
+          </div>
+
+          <div class="section-card" style="margin-top:14px;">
+            <div class="section-head">
+              <div class="title">📕 最近的错题（再错要罚抄啦！）</div>
+              <span class="more">38题 ›</span>
+            </div>
+            <div class="wrong-list">
+              <div class="wrong-item">
+                <div class="wrong-subj">📡</div>
+                <div class="wrong-body">
+                  <div class="wrong-q">TCP 三次握手中第二次握手的标志位组合是？</div>
+                  <div class="wrong-meta"><span>📡 网络</span><span>3天前</span><span style="color:var(--c-red);">❌ 错2次</span></div>
+                </div>
+                <div class="wrong-retry">重做</div>
+              </div>
+              <div class="wrong-item">
+                <div class="wrong-subj">🐘</div>
+                <div class="wrong-body">
+                  <div class="wrong-q">PostgreSQL 中 B+树索引适用场景？</div>
+                  <div class="wrong-meta"><span>🐘 数据库</span><span>5天前</span><span style="color:var(--c-red);">❌ 错1次</span></div>
+                </div>
+                <div class="wrong-retry">重做</div>
+              </div>
+              <div class="wrong-item">
+                <div class="wrong-subj">⚛️</div>
+                <div class="wrong-body">
+                  <div class="wrong-q">React useEffect 依赖数组为空数组时…</div>
+                  <div class="wrong-meta"><span>⚛️ 前端</span><span>上周</span><span style="color:var(--c-red);">❌ 错3次</span></div>
+                </div>
+                <div class="wrong-retry">重做</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="height:70px;"></div>
+          <div class="tab-bar">
+            <div class="tab"><span class="ico">🏠</span>首页</div>
+            <div class="tab"><span class="ico">🗺️</span>闯关</div>
+            <div class="tab"><span class="ico">📚</span>错题</div>
+            <div class="tab active"><span class="ico active-wrap">👤</span>我的</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- C：分享海报 -->
+  <div class="phone-wrapper">
+    <div class="phone-tag">
+      <span class="idx">C</span>
+      <span class="name">📤 分享成绩单海报</span>
+      <span class="label hot">HOT</span>
+    </div>
+    <div class="phone-frame">
+      <div class="phone-screen">
+        <div class="status-bar">
+          <span>9:50</span><span class="icons">📶 5G 🔋 80%</span>
+        </div>
+        <div class="app">
+          <div class="app-nav">
+            <button class="btn btn-outline btn-sm" style="width:auto;padding:5px 10px;">← 返回</button>
+            <span style="font-family:var(--font-title);font-size:16px;letter-spacing:1px;">📤 分享成绩</span>
+            <div style="width:40px;"></div>
+          </div>
+
+          <div class="poster-wrap">
+            <div class="poster">
+              <div class="poster-head">
+                <div class="poster-logo">
+                  <div class="ico">🐟</div>
+                  <div class="name">鱼皮AI闯关</div>
+                </div>
+                <div class="poster-date">2026.09.23</div>
+              </div>
+
+              <div class="poster-hero">
+                <div class="poster-topic">📡 TCP 三次握手与四次挥手</div>
+                <div class="poster-score-row">
+                  <div class="poster-score">
+                    <div class="big">80</div>
+                    <div class="lbl">本次得分</div>
+                  </div>
+                  <div class="poster-divider"></div>
+                  <div class="poster-grade">
+                    <div class="letter">A</div>
+                    <div class="stars">⭐⭐⭐⭐☆</div>
+                    <div class="lbl" style="font-family:var(--font-sub);font-size:10px;color:var(--c-gray);">评级</div>
+                  </div>
+                </div>
+                <div class="poster-3stats">
+                  <div class="ps"><div class="n">4/5</div><div class="l">答对题数</div></div>
+                  <div class="ps"><div class="n">80%</div><div class="l">正确率</div></div>
+                  <div class="ps"><div class="n">1次</div><div class="l">错题数</div></div>
+                </div>
+              </div>
+
+              <div class="poster-quote">
+                三次握手就像阿衰和大脸妹打招呼——两人都要确认对方听得到，友谊的连接才算真正建立哦！～
+              </div>
+
+              <div class="poster-bottom">
+                <div class="poster-qr">⬛</div>
+                <div class="poster-slogan">
+                  <div class="big">🤖 和鱼皮同学一起搞怪学习！</div>
+                  <div class="small">扫码加入怕踢中学 AI 闯关课堂，任意内容秒变闯关题！</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="post-actions">
+              <button class="btn">⬇️ 保存海报到相册</button>
+              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+                <button class="btn btn-outline btn-sm" style="width:auto;justify-self:center;padding:8px 10px;font-size:11px;">💬 微信</button>
+                <button class="btn btn-outline btn-sm" style="width:auto;justify-self:center;padding:8px 10px;font-size:11px;">📢 朋友圈</button>
+                <button class="btn btn-outline btn-sm" style="width:auto;justify-self:center;padding:8px 10px;font-size:11px;">👥 QQ</button>
+                <button class="btn btn-outline btn-sm" style="width:auto;justify-self:center;padding:8px 10px;font-size:11px;">🔗 复制</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- D：历史记录时间线 -->
+  <div class="phone-wrapper">
+    <div class="phone-tag">
+      <span class="idx">D</span>
+      <span class="name">🕒 历史记录 · 时间线</span>
+      <span class="label">PAGE 4/8</span>
+    </div>
+    <div class="phone-frame">
+      <div class="phone-screen">
+        <div class="status-bar">
+          <span>9:51</span><span class="icons">📶 5G 🔋 79%</span>
+        </div>
+        <div class="app">
+          <div class="app-nav">
+            <span style="font-family:var(--font-title);font-size:20px;letter-spacing:1px;">📜 学习足迹</span>
+            <div style="width:34px;height:34px;border:2px solid var(--c-ink);border-radius:9px;background:var(--c-chalk);display:flex;align-items:center;justify-content:center;box-shadow:1px 2px 0 var(--c-ink);font-size:15px;">📊</div>
+          </div>
+
+          <div class="profile-card" style="padding:14px;margin-top:4px;">
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;text-align:center;">
+              <div>
+                <div style="font-family:var(--font-en);font-weight:800;font-size:20px;color:var(--c-red);">128</div>
+                <div style="font-family:var(--font-sub);font-size:11px;color:var(--c-gray);margin-top:2px;">总闯关</div>
+              </div>
+              <div>
+                <div style="font-family:var(--font-en);font-weight:800;font-size:20px;color:var(--c-green);">87%</div>
+                <div style="font-family:var(--font-sub);font-size:11px;color:var(--c-gray);margin-top:2px;">平均正确率</div>
+              </div>
+              <div>
+                <div style="font-family:var(--font-en);font-weight:800;font-size:20px;color:var(--c-purple);">38h</div>
+                <div style="font-family:var(--font-sub);font-size:11px;color:var(--c-gray);margin-top:2px;">累计时长</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="filter-bar">
+            <div class="chip active">全部</div>
+            <div class="chip">💻 技术</div>
+            <div class="chip">📡 网络</div>
+            <div class="chip">🐘 数据库</div>
+            <div class="chip">⚛️ 前端</div>
+          </div>
+
+          <div class="timeline">
+            <div class="tl-item good">
+              <div class="tl-date"><span>📅 今天 09:47</span><span>用时 6:24</span></div>
+              <div class="tl-title">📡 TCP 三次握手与四次挥手</div>
+              <div class="tl-info">
+                <span class="tag tag-green">✅ 80 分 · 4/5</span>
+                <span class="tag tag-yellow">🪙 +80</span>
+                <span class="tag tag-purple">⭐ L2</span>
+              </div>
+            </div>
+            <div class="tl-item normal">
+              <div class="tl-date"><span>📅 昨天 21:33</span><span>用时 4:12</span></div>
+              <div class="tl-title">🐘 PostgreSQL 索引原理入门</div>
+              <div class="tl-info">
+                <span class="tag tag-yellow">⭐ 60 分 · 3/5</span>
+                <span class="tag tag-pink">📕 +2 错题</span>
+              </div>
+            </div>
+            <div class="tl-item good">
+              <div class="tl-date"><span>📅 昨天 14:08</span><span>用时 5:50</span></div>
+              <div class="tl-title">⚛️ React Hooks 生命周期对比</div>
+              <div class="tl-info">
+                <span class="tag tag-green">✅ 100 分 · 满分</span>
+                <span class="tag tag-blue">🏆 首获成就</span>
+              </div>
+            </div>
+            <div class="tl-item bad">
+              <div class="tl-date"><span>📅 3天前</span><span>用时 7:02</span></div>
+              <div class="tl-title">🌐 HTTPS 握手过程（RSA 与 ECDHE）</div>
+              <div class="tl-info">
+                <span class="tag tag-red">❌ 40 分 · 2/5</span>
+                <span class="tag tag-red">📕 +3 错题</span>
+                <span class="tag tag-gray">💔 HP -2</span>
+              </div>
+            </div>
+            <div class="tl-item good">
+              <div class="tl-date"><span>📅 上周 09/15</span><span>用时 3:44</span></div>
+              <div class="tl-title">💻 SQL 基础：JOIN 类型全解</div>
+              <div class="tl-info">
+                <span class="tag tag-green">✅ 90 分</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- E：欢迎引导页 1 + 登录页 -->
+  <div class="phone-wrapper">
+    <div class="phone-tag">
+      <span class="idx">E</span>
+      <span class="name">🎬 首次启动引导</span>
+      <span class="label">PAGE 5/8</span>
+    </div>
+    <div class="phone-frame">
+      <div class="phone-screen">
+        <div class="status-bar" style="background:transparent;">
+          <span style="color:var(--c-chalk);">9:52</span>
+          <span class="icons" style="color:var(--c-chalk);">📶 5G 🔋 78%</span>
+        </div>
+        <div class="app" style="background:linear-gradient(180deg, rgba(69,123,157,0.18) 0%, transparent 60%);">
+          <div class="welcome-wrap">
+            <div class="welcome-idx">STEP 1 / 3</div>
+            <div class="welcome-mascot">🐟</div>
+            <div class="welcome-title">怕踢中学<br/>AI 闯关课堂</div>
+            <div class="welcome-desc">
+              欢迎加入鱼皮同学和脸脸班长的搞怪学习小组！<br/>
+              <b style="color:var(--c-red);">任意输入你想学的知识</b>，AI 老师立刻帮你变成闯关题！
+            </div>
+            <div class="welcome-bullets">
+              <div class="wb">
+                <div class="ico">✏️</div>
+                <div class="txt">
+                  <div class="t">① 输入任意主题</div>
+                  <div class="d">一句话、一段文章、一本书都行</div>
+                </div>
+              </div>
+              <div class="wb">
+                <div class="ico">🧠</div>
+                <div class="txt">
+                  <div class="t">② AI 秒出闯关题</div>
+                  <div class="d">单选 / 多选 / 判断 + 详细讲解</div>
+                </div>
+              </div>
+              <div class="wb">
+                <div class="ico">🏆</div>
+                <div class="txt">
+                  <div class="t">③ 答题 + 复盘报告</div>
+                  <div class="d">掌握点 / 薄弱点 + 脸脸金句</div>
+                </div>
+              </div>
+            </div>
+            <div style="margin-top:4px;display:flex;flex-direction:column;gap:8px;width:100%;">
+              <button class="btn btn-lg">🚀 不登录，先玩一下</button>
+              <button class="btn btn-outline btn-sm" style="width:auto;margin:0 auto;background:transparent;border:none;box-shadow:none;color:var(--c-blue);">已有账号？微信一键登录 ›</button>
+            </div>
+            <div class="welcome-dots">
+              <div class="d active"></div><div class="d"></div><div class="d"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- F：登录 / 注册页 -->
+  <div class="phone-wrapper">
+    <div class="phone-tag">
+      <span class="idx">F</span>
+      <span class="name">🔐 登录 & 注册</span>
+      <span class="label">PAGE 6/8</span>
+    </div>
+    <div class="phone-frame">
+      <div class="phone-screen">
+        <div class="status-bar">
+          <span>9:53</span><span class="icons">📶 5G 🔋 77%</span>
+        </div>
+        <div class="app">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding-top:4px;">
+            <button class="btn btn-outline btn-sm" style="width:auto;padding:4px 10px;font-size:12px;background:transparent;border:none;box-shadow:none;">‹ 跳过</button>
+            <span class="tag tag-gray" style="opacity:0.8;">简中 / EN</span>
+          </div>
+
+          <div class="login-logo">
+            <div class="ico">🐟</div>
+            <div class="t">
+              <div class="big">怕踢中学</div>
+              <div class="small">AI 闯关学习小程序 · 登录</div>
+            </div>
+          </div>
+
+          <div class="login-card">
+            <div class="login-title">🎓 欢迎回到怕踢教室～</div>
+
+            <div class="login-input">
+              <label>📱 手机号 / 邮箱</label>
+              <input type="text" placeholder="请输入你的学号或手机号" value="138****8888"/>
+            </div>
+            <div class="login-input">
+              <label>🔑 密码 / 验证码</label>
+              <input type="password" placeholder="请输入密码或验证码" value="••••••••"/>
+            </div>
+
+            <div class="login-options">
+              <span class="rm"><input type="checkbox" checked style="accent-color:var(--c-red);"/>记住我</span>
+              <span style="color:var(--c-red);">忘记密码？</span>
+            </div>
+
+            <button class="btn btn-lg">🎒 进教室上课！</button>
+
+            <div class="login-divider">或者用这些方式</div>
+
+            <div class="third-login">
+              <div class="t-btn" style="background:#E8F7EC;color:#09B83E;">💬</div>
+              <div class="t-btn" style="background:#12B7F5;color:#fff;">🐧</div>
+              <div class="t-btn" style="background:#000;color:#FFD400;">🍎</div>
+              <div class="t-btn" style="background:#F6F6F6;color:#666;">📱</div>
+            </div>
+          </div>
+
+          <div style="margin:12px 4px 0;padding:10px 12px;background:var(--c-card);border:2px dashed var(--c-ink);border-radius:10px;">
+            <div style="font-family:var(--font-title);font-size:13px;display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+              💡 脸脸班长悄悄告诉你
+            </div>
+            <div style="font-family:var(--font-sub);font-size:11px;line-height:1.6;color:var(--c-gray);">
+              新用户登录即送 <b style="color:var(--c-red);">500 金币 + 3 张「跳过卡」+ 首次解锁稀有皮肤</b>，老带新还有额外奖励哦！
+            </div>
+          </div>
+
+          <div class="login-footer">
+            登录即代表同意《<u>用户协议</u>》《<u>隐私政策</u>》《<u>儿童个人信息保护</u>》<br>
+            本站内容由 AI 生成，仅供参考学习使用
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- G：PK 对战页 -->
+  <div class="phone-wrapper">
+    <div class="phone-tag">
+      <span class="idx">G</span>
+      <span class="name">⚔️ PK 对战 · 实时答题</span>
+      <span class="label hot">HOT</span>
+    </div>
+    <div class="phone-frame">
+      <div class="phone-screen">
+        <div class="status-bar">
+          <span>9:54</span><span class="icons">📶 5G 🔋 76%</span>
+        </div>
+        <div class="app">
+          <div class="app-nav" style="padding-top:4px;">
+            <button class="btn btn-outline btn-sm" style="width:auto;padding:4px 10px;">✕ 退出</button>
+            <span style="font-family:var(--font-title);font-size:17px;letter-spacing:1px;">⚔️ 双人排位赛</span>
+            <span class="tag tag-red">匹配中 03</span>
+          </div>
+
+          <div class="pk-vs">
+            <div class="pk-player">
+              <div class="avatar">🐟</div>
+              <div class="name">鱼皮同学</div>
+              <div class="lv">Lv.3</div>
+              <div class="score">1</div>
+            </div>
+            <div class="pk-mid">
+              <div class="vs">VS</div>
+              <div class="timer">⏱ 00:12</div>
+            </div>
+            <div class="pk-player right">
+              <div class="avatar">👧</div>
+              <div class="name">脸脸班长</div>
+              <div class="lv">Lv.12</div>
+              <div class="score">1</div>
+            </div>
+          </div>
+
+          <div class="pk-progress">
+            <div class="round-dot won"></div>
+            <div class="round-dot lost"></div>
+            <div class="round-dot ing"></div>
+            <div class="round-dot"></div>
+            <div class="round-dot"></div>
+          </div>
+
+          <div class="pk-qcard">
+            <div class="head">
+              <span class="q-tag">ROUND 3 / 5 · 单选</span>
+              <span class="round">⭐ 3 分题</span>
+            </div>
+            <div class="q">
+              <b>（速答题）</b>以下哪个不是应用层协议？<br/>
+              <span style="color:var(--c-red);font-size:12px;">💡 越快选对得分越高！</span>
+            </div>
+          </div>
+
+          <div style="padding:0 2px;margin-top:10px;">
+            <div class="pk-opt you">
+              <div class="left-bar" style="width:72%;"></div>
+              <div class="k">A</div>
+              <div class="t">HTTP 超文本传输协议</div>
+              <div class="pct">72%</div>
+            </div>
+            <div class="pk-opt correct-ans">
+              <div class="left-bar" style="width:14%;"></div>
+              <div class="k">B</div>
+              <div class="t">TCP 传输控制协议</div>
+              <div class="pct">14%</div>
+            </div>
+            <div class="pk-opt">
+              <div class="left-bar" style="width:8%;"></div>
+              <div class="k">C</div>
+              <div class="t">DNS 域名系统</div>
+              <div class="pct">8%</div>
+            </div>
+            <div class="pk-opt">
+              <div class="left-bar" style="width:6%;"></div>
+              <div class="k">D</div>
+              <div class="t">SSH 远程登录协议</div>
+              <div class="pct">6%</div>
+            </div>
+          </div>
+
+          <div class="pk-actions">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 2px 0;">
+              <span style="font-family:var(--font-sub);font-size:12px;color:var(--c-gray);">🗣️ 脸脸班长：「这题老师讲过！😼」</span>
+              <span class="tag tag-red">-2 ❤️</span>
+            </div>
+            <button class="btn btn-yellow" style="margin-top:6px;">⏭ 下一题（1.5s后自动进入）</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- H：成就墙 + 解锁弹窗 -->
+  <div class="phone-wrapper">
+    <div class="phone-tag">
+      <span class="idx">H</span>
+      <span class="name">🏆 成就墙 + 解锁弹窗</span>
+      <span class="label">PAGE 8/8</span>
+    </div>
+    <div class="phone-frame">
+      <div class="phone-screen">
+        <div class="status-bar">
+          <span>9:55</span><span class="icons">📶 5G 🔋 75%</span>
+        </div>
+        <div class="app">
+          <div class="app-nav" style="padding-top:4px;">
+            <button class="btn btn-outline btn-sm" style="width:auto;padding:4px 10px;">← 返回</button>
+            <span style="font-family:var(--font-title);font-size:19px;letter-spacing:1px;">🏆 成就收集册</span>
+            <div style="width:34px;height:34px;border:2px solid var(--c-ink);border-radius:9px;background:var(--c-chalk);display:flex;align-items:center;justify-content:center;box-shadow:1px 2px 0 var(--c-ink);font-size:15px;">📤</div>
+          </div>
+
+          <div class="ach-stats">
+            <div class="ach-stat"><div class="n">8/21</div><div class="l">已解锁</div></div>
+            <div class="ach-stat"><div class="n">2</div><div class="l">本周新</div></div>
+            <div class="ach-stat"><div class="n">3</div><div class="l">稀有度</div></div>
+          </div>
+          <div class="ach-bar-all">
+            <div class="lbl"><span>📊 收集进度</span><span>38%</span></div>
+            <div class="bar"><div class="fill"></div></div>
+          </div>
+
+          <div class="ach-cat">
+            <div class="ach-cat-head">
+              <div class="title"><span class="emoji">⭐</span>新手村 · 起步成就</div>
+              <span class="cnt">4 / 6 解锁</span>
+            </div>
+            <div class="ach-grid">
+              <div class="ach gold">
+                <div class="medal">👶</div>
+                <div class="name">初入怕踢</div>
+                <div class="rarity n">N</div>
+              </div>
+              <div class="ach gold">
+                <div class="medal">✅</div>
+                <div class="name">首战告捷</div>
+                <div class="rarity n">N</div>
+              </div>
+              <div class="ach silver hot">
+                <div class="medal">💯</div>
+                <div class="name">首次满分</div>
+                <div class="rarity r">R</div>
+              </div>
+              <div class="ach bronze">
+                <div class="medal">📚</div>
+                <div class="name">勤奋小蜜蜂</div>
+                <div class="rarity n">N</div>
+              </div>
+              <div class="ach locked">
+                <div class="medal">🔥</div>
+                <div class="name">7日连胜</div>
+                <div class="rarity r">R</div>
+              </div>
+              <div class="ach locked">
+                <div class="medal">🎓</div>
+                <div class="name">小学霸</div>
+                <div class="rarity sr">SR</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="ach-cat">
+            <div class="ach-cat-head">
+              <div class="title"><span class="emoji">⚔️</span>闯关 · 进阶成就</div>
+              <span class="cnt">2 / 8 解锁</span>
+            </div>
+            <div class="ach-grid">
+              <div class="ach gold hot">
+                <div class="medal">💪</div>
+                <div class="name">第一章通关</div>
+                <div class="rarity r">R</div>
+              </div>
+              <div class="ach silver">
+                <div class="medal">🌐</div>
+                <div class="name">网络通</div>
+                <div class="rarity r">R</div>
+              </div>
+              <div class="ach locked">
+                <div class="medal">🐘</div>
+                <div class="name">数据库高手</div>
+                <div class="rarity sr">SR</div>
+              </div>
+              <div class="ach locked">
+                <div class="medal">⚛️</div>
+                <div class="name">React Master</div>
+                <div class="rarity sr">SR</div>
+              </div>
+              <div class="ach locked">
+                <div class="medal">🏅</div>
+                <div class="name">连续通关20关</div>
+                <div class="rarity sr">SR</div>
+              </div>
+              <div class="ach locked">
+                <div class="medal">👑</div>
+                <div class="name">满星王者</div>
+                <div class="rarity" style="background:linear-gradient(90deg,var(--c-yellow),var(--c-red));color:#fff;">SSR</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 解锁新成就的弹窗 -->
+          <div class="modal-wrap">
+            <div class="modal">
+              <div class="close">✕</div>
+              <div class="icon-huge">💯</div>
+              <div class="m-title">🎊 成就解锁！</div>
+              <div class="m-sub">恭喜你获得新成就徽章</div>
+              <div class="m-body" style="text-align:center;">
+                <div style="font-family:var(--font-title);font-size:22px;color:var(--c-purple);letter-spacing:2px;">「首次满分 R」</div>
+                <div style="margin:8px 0;font-size:12px;color:var(--c-gray);line-height:1.6;">
+                  成就描述：完成一次闯关并取得<b style="color:var(--c-red);">100 分</b>的完美成绩！<br>
+                  脸脸班长都对你刮目相看了～
+                </div>
+                <div style="margin-top:8px;display:flex;justify-content:center;gap:12px;">
+                  <span class="tag tag-yellow">🪙 +200 金币</span>
+                  <span class="tag tag-purple">💎 +10 钻石</span>
+                  <span class="tag tag-red">⭐ XP+50</span>
+                </div>
+              </div>
+              <div class="m-actions">
+                <button class="btn">🎉 收下奖励！</button>
+                <button class="btn btn-outline btn-sm" style="width:auto;margin:0 auto;">📤 炫耀一下</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="doc-footer">
+  <div class="back">← 查看 01_设计规范 / 02_核心业务闭环流程</div>
+  <div>🎪 鱼皮 AI 闯关学习小程序 · 怕踢课堂风 UI 原型 v1.0 · 全部 3 份文档已完成</div>
+  <div style="margin-top:6px;">共 3 份 HTML：<b>01 设计规范 · 02 核心流程 8 页 · 03 扩展页面 8 页</b> 合计 16 个页面原型</div>
+</div>
+
+</body>
+</html>
