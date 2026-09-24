@@ -1,0 +1,55 @@
+@use '@/styles/variables.scss' as *;
+
+.opt {
+  display: flex;
+  align-items: flex-start;
+  gap: 40rpx;
+  padding: 48rpx 40rpx;
+  background: $color-bg-page;
+  border-radius: $radius-lg;
+  border: 4rpx solid transparent;
+  min-height: 192rpx;
+  transition: all $transition-base;
+
+  &.state-selected {
+    border-color: $color-primary;
+    background: $color-primary-soft;
+  }
+  &.state-correct {
+    border-color: $color-success;
+    background: $color-success-soft;
+  }
+  &.state-wrong {
+    border-color: $color-error;
+    background: $color-error-soft;
+  }
+  &.disabled {
+    opacity: 0.6;
+  }
+}
+
+.optKey {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  background: $color-bg-card;
+  color: $color-text-tertiary;
+  font-weight: 800;
+  font-size: $font-size-lg;
+  @include flex-center;
+  flex-shrink: 0;
+  box-shadow: $shadow-card;
+
+  &.optKeySelected {
+    background: $color-primary;
+    color: $color-text-white;
+  }
+}
+
+.optText {
+  font-size: $font-size-md;
+  line-height: $line-height-loose;
+  color: $color-text-primary;
+  flex: 1;
+  padding-top: 12rpx;
+}

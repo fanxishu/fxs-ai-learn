@@ -1,0 +1,79 @@
+{
+  "quiz_id": "mock-quiz-fixture-001",
+  "title": "鱼皮 AI 闯关 · Python 基础自测",
+  "questions": [
+    {
+      "question_id": "q-001",
+      "question_type": "single",
+      "stem": "在 Python 中，以下哪个关键字用于定义一个函数？",
+      "options": [
+        { "key": "A", "text": "class" },
+        { "key": "B", "text": "def" },
+        { "key": "C", "text": "function" },
+        { "key": "D", "text": "define" }
+      ],
+      "answer": "B",
+      "knowledge_point": "Python 函数定义",
+      "explanation": "Python 使用 def 关键字定义函数，class 用于定义类。",
+      "difficulty": 1
+    },
+    {
+      "question_id": "q-002",
+      "question_type": "single",
+      "stem": "下列哪个不是 Python 的内置数据类型？",
+      "options": [
+        { "key": "A", "text": "list" },
+        { "key": "B", "text": "tuple" },
+        { "key": "C", "text": "array" },
+        { "key": "D", "text": "dict" }
+      ],
+      "answer": "C",
+      "knowledge_point": "Python 数据类型",
+      "explanation": "array 不是 Python 内置类型，需通过 array 模块或 numpy 引入。",
+      "difficulty": 2
+    },
+    {
+      "question_id": "q-003",
+      "question_type": "single",
+      "stem": "表达式 `3 ** 2` 的结果是？",
+      "options": [
+        { "key": "A", "text": "6" },
+        { "key": "B", "text": "9" },
+        { "key": "C", "text": "5" },
+        { "key": "D", "text": "8" }
+      ],
+      "answer": "B",
+      "knowledge_point": "Python 运算符",
+      "explanation": "** 是幂运算符，3 ** 2 表示 3 的平方等于 9。",
+      "difficulty": 1
+    },
+    {
+      "question_id": "q-004",
+      "question_type": "multiple",
+      "stem": "以下哪些是 Python 的不可变类型？（多选）",
+      "options": [
+        { "key": "A", "text": "int" },
+        { "key": "B", "text": "list" },
+        { "key": "C", "text": "str" },
+        { "key": "D", "text": "tuple" }
+      ],
+      "answer": ["A", "C", "D"],
+      "knowledge_point": "Python 可变/不可变类型",
+      "explanation": "int、str、tuple 是不可变类型；list 是可变类型。",
+      "difficulty": 3
+    },
+    {
+      "question_id": "q-005",
+      "question_type": "judge",
+      "stem": "Python 中使用 # 开头的行表示单行注释。",
+      "options": [
+        { "key": "对", "text": "正确" },
+        { "key": "错", "text": "错误" }
+      ],
+      "answer": "对",
+      "knowledge_point": "Python 注释语法",
+      "explanation": "Python 使用 # 作为单行注释的起始符。",
+      "difficulty": 1
+    }
+  ]
+}

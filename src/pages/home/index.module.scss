@@ -1,0 +1,171 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  padding: 40rpx $page-padding 180rpx;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-lg;
+}
+
+.hero {
+  padding: 48rpx 40rpx;
+  border-radius: $radius-xl;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+  box-shadow: 0 10rpx 32rpx rgba(22, 93, 255, 0.22);
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+
+  .title {
+    font-size: $font-size-xxl;
+    font-weight: $font-weight-bold;
+    line-height: 1.3;
+  }
+
+  .subtitle {
+    font-size: $font-size-md;
+    opacity: 0.88;
+    line-height: 1.6;
+  }
+
+  .badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $spacing-sm;
+    margin-top: $spacing-sm;
+  }
+}
+
+.hintChip {
+  display: inline-flex;
+  align-items: center;
+  padding: 8rpx 24rpx;
+  border-radius: $radius-round;
+  background: rgba(255, 255, 255, 0.18);
+  font-size: $font-size-sm;
+  backdrop-filter: blur(4rpx);
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: $spacing-xs 0 0;
+
+  .left {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-semibold;
+    color: $color-text-primary;
+  }
+
+  .right {
+    font-size: $font-size-sm;
+    color: $color-text-tertiary;
+  }
+}
+
+.topBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    font-size: $font-size-lg;
+    font-weight: $font-weight-bold;
+    color: $color-text-primary;
+  }
+}
+
+.inputArea {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.footerActions {
+  margin-top: $spacing-md;
+  padding-top: $spacing-lg;
+  padding-bottom: $spacing-md;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+
+  .primaryButton {
+    box-shadow: 0 14rpx 32rpx rgba(22, 93, 255, 0.32);
+  }
+}
+
+.recent {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+
+  .card {
+    padding: $spacing-lg;
+    background: $color-bg-card;
+    border-radius: $radius-lg;
+    box-shadow: $shadow-card;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+    transition: all $transition-base;
+
+    &:active {
+      transform: scale(0.99);
+      box-shadow: $shadow-float;
+    }
+
+    .rowTop {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: $spacing-sm;
+    }
+
+    .title {
+      font-size: $font-size-md;
+      font-weight: $font-weight-semibold;
+      color: $color-text-primary;
+      @include text-ellipsis;
+      flex: 1;
+    }
+
+    .sub {
+      display: flex;
+      align-items: center;
+      gap: $spacing-sm;
+      font-size: $font-size-sm;
+      color: $color-text-tertiary;
+      flex-wrap: wrap;
+    }
+
+    .score {
+      font-weight: $font-weight-semibold;
+    }
+
+    .high { color: $color-mastery-high; }
+    .mid { color: $color-mastery-mid; }
+    .low { color: $color-mastery-low; }
+  }
+
+  .empty {
+    padding: 48rpx $spacing-lg;
+    border-radius: $radius-lg;
+    background: $color-bg-card;
+    text-align: center;
+    color: $color-text-tertiary;
+    font-size: $font-size-md;
+    box-shadow: $shadow-card;
+  }
+}
+
+.breadcrumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+}

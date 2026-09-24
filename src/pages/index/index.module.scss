@@ -1,0 +1,55 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  padding: 80rpx $page-padding;
+  background: $color-bg-page-gradient;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-xl;
+  text-align: center;
+
+  .emoji {
+    font-size: 160rpx;
+    line-height: 1;
+  }
+
+  .title {
+    font-size: $font-size-xxl;
+    font-weight: $font-weight-bold;
+    color: $color-text-primary;
+  }
+
+  .sub {
+    font-size: $font-size-md;
+    color: $color-text-secondary;
+    line-height: 1.7;
+    max-width: 560rpx;
+  }
+
+  .cards {
+    display: flex;
+    gap: $spacing-md;
+    margin-top: $spacing-md;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .pill {
+    padding: $spacing-sm $spacing-lg;
+    border-radius: $radius-round;
+    background: $color-bg-card;
+    color: $color-primary;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+    box-shadow: $shadow-card;
+  }
+
+  .btnWrap {
+    width: 100%;
+    max-width: 560rpx;
+    margin-top: $spacing-xl;
+  }
+}

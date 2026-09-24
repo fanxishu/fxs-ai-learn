@@ -1,0 +1,120 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  padding: $spacing-lg $page-padding calc(env(safe-area-inset-bottom, 0rpx) + 160rpx);
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-lg;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+
+  .topRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-sm;
+  }
+
+  .title {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-bold;
+    color: $color-text-primary;
+    flex: 1;
+    @include text-ellipsis;
+  }
+
+  .progress {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+
+    .meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: $font-size-sm;
+      color: $color-text-tertiary;
+    }
+  }
+}
+
+.card {
+  background: $color-bg-card;
+  border-radius: $radius-xl;
+  padding: $spacing-xl $spacing-lg;
+  box-shadow: $shadow-card;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-lg;
+}
+
+.typeRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.stem {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  line-height: 1.7;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.rewardToast {
+  padding: $spacing-md $spacing-lg;
+  border-radius: $radius-lg;
+  background: linear-gradient(135deg, $color-coin-bg 0%, #fff 100%);
+  border: 2rpx solid rgba(255, 154, 46, 0.2);
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  color: $color-coin;
+  font-weight: $font-weight-semibold;
+  animation: fadeInUp 300ms ease;
+
+  .emoji { font-size: 40rpx; }
+  .text { flex: 1; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16rpx); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.bottomBar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 24rpx $page-padding calc(env(safe-area-inset-bottom, 0rpx) + 24rpx);
+  background: linear-gradient(180deg, rgba(245, 246, 247, 0) 0%, rgba(245, 246, 247, 0.92) 40%, rgba(245, 246, 247, 1) 100%);
+  backdrop-filter: blur(6rpx);
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+
+  .btnConfirmPrimary {
+    box-shadow: 0 14rpx 32rpx rgba(22, 93, 255, 0.32);
+  }
+}
+
+.statRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: $color-text-secondary;
+  font-size: $font-size-sm;
+  padding: 0 $spacing-xs;
+}

@@ -1,0 +1,30 @@
+.wrap {
+  position: relative;
+}
+
+.ring {
+  width: 100%;
+  height: 100%;
+}
+
+.inner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.num {
+  font-size: 192rpx;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.unit {
+  font-size: 64rpx;
+  color: #6c7b87;
+  font-weight: 600;
+  margin-top: 16rpx;
+}

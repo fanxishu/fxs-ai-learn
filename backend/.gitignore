@@ -1,0 +1,25 @@
+# Python 虚拟环境（项目内自建，绝对禁止提交）
+.venv/
+venv/
+env/
+
+# Python 缓存
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# 敏感环境变量（核心！包含 API Key 等密钥，严禁提交）
+.env
+.env.*
+!.env.example
+!.env.sample
+.envkey
+.env_key
+.env-keys
+
+# 临时文件
+.tmp/
+*.log

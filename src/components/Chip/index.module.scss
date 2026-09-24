@@ -1,0 +1,24 @@
+@use '@/styles/variables.scss' as *;
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: $radius-round;
+  font-weight: $font-weight-bold;
+  white-space: nowrap;
+
+  &.size-sm { padding: 8rpx 28rpx; font-size: $font-size-sm; }
+  &.size-md { padding: 12rpx 32rpx; font-size: $font-size-md; }
+
+  /* 实心系列 */
+  &.color-orange { background: $color-primary; color: $color-text-white; }
+  &.color-blue   { background: $color-info; color: $color-text-white; }
+  &.color-purple { background: $color-purple; color: $color-text-white; }
+  &.color-green  { background: $color-success; color: $color-text-white; }
+  &.color-red    { background: $color-error; color: $color-text-white; }
+
+  /* 柔和系列 */
+  &.color-soft-blue   { background: $color-info-soft;    color: $color-info; }
+  &.color-soft-orange { background: $color-primary-soft; color: $color-primary; }
+}

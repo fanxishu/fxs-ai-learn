@@ -1,0 +1,48 @@
+@use '@/styles/variables.scss' as *;
+
+.btn {
+  @include button-reset;
+  @include flex-center;
+  border: none;
+  cursor: pointer;
+  font-weight: $font-weight-semibold;
+  transition: all $transition-base;
+  white-space: nowrap;
+  min-width: 160rpx;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+
+  &.block { width: 100%; }
+
+  /* ===== 尺寸 ===== */
+  &.size-md { height: $button-height-sm; padding: 0 32rpx; font-size: $font-size-md; border-radius: 32rpx; }
+  &.size-lg { height: $button-height-md; padding: 0 40rpx; font-size: $font-size-lg; border-radius: $radius-button; }
+  &.size-xl { height: $button-height-lg; padding: 0 48rpx; font-size: $font-size-xl; border-radius: $radius-button; }
+
+  /* ===== 变体 ===== */
+  &.variant-primary {
+    background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+    color: $color-text-white;
+    box-shadow: 0 10rpx 24rpx rgba(255, 122, 47, 0.28);
+  }
+  &.variant-secondary {
+    background: $color-bg-card;
+    color: $color-primary;
+    border: 3rpx solid $color-primary-soft;
+  }
+  &.variant-ghost {
+    background: transparent;
+    color: $color-text-secondary;
+  }
+
+  &.disabled {
+    background: #cfc7b8;
+    color: #f5eee0;
+    box-shadow: none;
+    pointer-events: none;
+    opacity: 0.85;
+  }
+}

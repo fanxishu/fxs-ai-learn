@@ -1,0 +1,26 @@
+@use '@/styles/variables.scss' as *;
+
+.wrap {
+  margin-top: 56rpx;
+  padding: 40rpx;
+  background: $color-bg-page;
+  border-radius: $radius-lg;
+}
+
+.badge {
+  display: inline-block;
+  padding: 12rpx 28rpx;
+  border-radius: $radius-round;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+  margin-bottom: $spacing-md;
+
+  &.state-good { background: $color-success-soft; color: $color-success; }
+  &.state-bad  { background: $color-error-soft;   color: $color-error; }
+}
+
+.text {
+  font-size: $font-size-md;
+  line-height: $line-height-loose;
+  color: $color-text-tertiary;
+}
