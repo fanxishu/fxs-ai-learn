@@ -1,3 +1,4 @@
+import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
@@ -6,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.core.config import settings
+from app.core.db import create_db_pool, create_tables_if_not_exists, close_db_pool
 from app.core.exceptions import FishAIException
 from app.core.logging import setup_logging
 from app.api.v1.routes import api_router
@@ -14,8 +16,11 @@ from app.models.common import error_response
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    await create_db_pool()
+    await create_tables_if_not_exists()
     setup_logging()
     yield
+    await close_db_pool()
 
 
 def create_app() -> FastAPI:

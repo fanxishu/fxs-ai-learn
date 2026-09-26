@@ -30,5 +30,29 @@ class Settings(BaseSettings):
 
     SENSITIVE_WORDS_FILE: str = "app/utils/sensitive_words.txt"
 
+    DB_DRIVER: str = "pymysql"
+    DB_HOST: str = "127.0.0.1"
+    DB_PORT: int = 3306
+    DB_USER: str = "root"
+    DB_PASSWORD: str = ""
+    DB_NAME: str = "fxs_ai_learn"
+
+    JWT_SECRET_KEY: str = "change-me-in-production"
+    JWT_ALGORITHM: str = "HS256"
+    JWT_EXPIRE_DAYS: int = 7
+
+    WECHAT_APPID: Optional[str] = None
+    WECHAT_APPSECRET: Optional[str] = None
+
+    USE_MOCK_WX_LOGIN: bool = True
+
+    @property
+    def database_url(self) -> str:
+        return (
+            f"mysql+aiomysql://{self.DB_USER}:{self.DB_PASSWORD}"
+            f"@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+            f"?charset=utf8mb4"
+        )
+
 
 settings = Settings()
