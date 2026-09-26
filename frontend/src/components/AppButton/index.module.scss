@@ -1,0 +1,49 @@
+@use '@/styles/variables.scss' as *;
+
+.btn {
+  @include button-reset;
+  @include flex-center;
+  border: none;
+  cursor: pointer;
+  font-weight: $font-weight-semibold;
+  transition: all $transition-base;
+  white-space: nowrap;
+  min-width: 160rpx;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+
+  &.block { width: 100%; }
+
+  /* ===== 尺寸（严格原型 min-height 46px = 92rpx） ===== */
+  &.size-md { height: 80rpx; padding: 0 32rpx; font-size: $font-size-md; border-radius: $radius-sm; }
+  &.size-lg { height: 88rpx; padding: 0 40rpx; font-size: $font-size-lg; border-radius: $radius-sm; }
+  &.size-xl { min-height: 92rpx; height: auto; padding: 20rpx 48rpx; font-size: $font-size-xl; border-radius: $radius-sm; }
+
+  /* ===== 变体（严格 Copilot 原型 home-btn primary） ===== */
+  &.variant-primary {
+    background: $color-primary-button-gradient;
+    color: $color-text-white;
+    box-shadow: $color-primary-shadow, inset 0 2rpx 0 rgba(255,255,255,0.22);
+  }
+  &.variant-secondary {
+    background: $color-bg-card;
+    color: $color-primary;
+    border: 3rpx solid $color-primary-soft;
+    border-radius: $radius-sm;
+  }
+  &.variant-ghost {
+    background: transparent;
+    color: $color-text-secondary;
+  }
+
+  &.disabled {
+    background: #cfc7b8;
+    color: #f5eee0;
+    box-shadow: none;
+    pointer-events: none;
+    opacity: 0.85;
+  }
+}

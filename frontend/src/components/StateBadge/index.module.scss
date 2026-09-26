@@ -1,0 +1,14 @@
+@use '@/styles/variables.scss' as *;
+
+.badge {
+  display: inline-block;
+  padding: 12rpx 28rpx;
+  border-radius: $radius-round;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+  border: 2rpx solid transparent;
+
+  &.kind-good { background: $color-success-soft; color: $color-success; border-color: rgba(56,185,135,0.22); }
+  &.kind-bad  { background: $color-error-soft;   color: $color-error; border-color: rgba(255,111,93,0.22); }
+  &.kind-info { background: $color-primary-soft; color: $color-primary-dark; border-color: $color-card-border; }
+}

@@ -1,0 +1,50 @@
+// ============================================
+// 主题配色变量（Copilot 原型 01-core-flow.html + 03-design-system-board.html 严格对齐）
+// ============================================
+
+// 品牌主题色（暖橙 #ff7a2f 体系）
+$color-primary: #ff7a2f;
+$color-primary-light: #ff944f;
+$color-primary-dark: #df5f1f;
+$color-primary-soft: #fff1e6;
+
+// 功能色（原型 03-design-system-board）
+$color-success: #38b987;
+$color-warning: #ff7a2f;
+$color-error: #ff6f5d;
+$color-info: #4e9fff;
+
+// 背景色（米色体系）
+$color-bg-page: #f6f4ef;
+$color-bg-card: #fff6ef;
+$color-bg-hover: #fff1e6;
+$color-card-border: #ecdccc;
+
+// 文本色
+$color-text-primary: #1f2d37;
+$color-text-secondary: #6c7b87;
+$color-text-tertiary: #86909c;
+$color-text-disabled: #c9cdd4;
+$color-text-white: #ffffff;
+
+// 边框色
+$color-border: #ece2d8;
+$color-divider: #f2ebe1;
+
+// 扩展色（按原型 + 原功能色归一）
+$color-purple: #8a6df0;
+$color-gold: #ff7a2f;
+$color-mastery-high: #38b987;
+$color-mastery-mid: #ff7a2f;
+$color-mastery-low: #ff6f5d;
+$color-success-soft: rgba(56, 185, 135, 0.12);
+$color-error-soft:   rgba(255, 111, 93, 0.12);
+$color-info-soft:    rgba(78, 159, 255, 0.12);
+$color-bg-page-gradient: linear-gradient(180deg, #fff6ef 0%, #f6f4ef 100%);
+$color-primary-gradient: linear-gradient(180deg, $color-primary-light 0%, $color-primary-dark 100%);
+$color-primary-button-gradient: linear-gradient(180deg, #ff944f, #ff6f27);
+$color-primary-shadow: 0 10px 20px rgba(255, 122, 47, 0.24);
+$color-primary-shadow-soft: 0 6px 16px rgba(255, 122, 47, 0.18);
+$color-coin: #ff7a2f;
+$color-coin-bg: #fff3e8;
+$color-coin-gradient: linear-gradient(135deg, #ff944f 0%, #ff6f27 100%);

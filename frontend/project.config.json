@@ -1,0 +1,208 @@
+{
+  "miniprogramRoot": "dist/",
+  "cloudfunctionRoot": "cloudfunctions/",
+  "projectname": "taro_template",
+  "description": "taro_template",
+  "appid": "wxc2be9226cb6b2de7",
+  "setting": {
+    "urlCheck": false,
+    "es6": true,
+    "enhance": true,
+    "compileHotReLoad": true,
+    "postcss": true,
+    "preloadBackgroundData": false,
+    "minified": false,
+    "newFeature": true,
+    "autoAudits": false,
+    "coverView": true,
+    "showShadowRootInWxmlPanel": false,
+    "scopeDataCheck": false,
+    "useCompilerModule": false,
+    "compileWorklet": false,
+    "uglifyFileName": false,
+    "uploadWithSourceMap": true,
+    "packNpmManually": false,
+    "packNpmRelationList": [],
+    "minifyWXSS": true,
+    "minifyWXML": true,
+    "localPlugins": false,
+    "disableUseStrict": false,
+    "useCompilerPlugins": false,
+    "condition": false,
+    "babelSetting": {
+      "ignore": [],
+      "disablePlugins": [],
+      "outputPath": ""
+    }
+  },
+  "packOptions": {
+    "ignore": [
+      {
+        "value": "backend",
+        "type": "folder"
+      },
+      {
+        "value": "src",
+        "type": "folder"
+      },
+      {
+        "value": "config",
+        "type": "folder"
+      },
+      {
+        "value": "scripts",
+        "type": "folder"
+      },
+      {
+        "value": "types",
+        "type": "folder"
+      },
+      {
+        "value": ".trae",
+        "type": "folder"
+      },
+      {
+        "value": ".pai",
+        "type": "folder"
+      },
+      {
+        "value": "node_modules",
+        "type": "folder"
+      },
+      {
+        "value": ".taro-home",
+        "type": "folder"
+      },
+      {
+        "value": "node_modules/.ajv_fetch_tmp",
+        "type": "folder"
+      },
+      {
+        "value": "node_modules/.ajv_fetch_tmp2",
+        "type": "folder"
+      },
+      {
+        "value": ".env",
+        "type": "file"
+      },
+      {
+        "value": "__https_proxy.js",
+        "type": "file"
+      },
+      {
+        "value": "__run_npm_install.js",
+        "type": "file"
+      },
+      {
+        "value": "__run_npm2.js",
+        "type": "file"
+      },
+      {
+        "value": "__run_npm3.js",
+        "type": "file"
+      },
+      {
+        "value": "__run_ajv_and_build.js",
+        "type": "file"
+      },
+      {
+        "value": "__rebuild_build_weapp.js",
+        "type": "file"
+      },
+      {
+        "value": "__build_weapp4.js",
+        "type": "file"
+      },
+      {
+        "value": "__build_weapp5.js",
+        "type": "file"
+      },
+      {
+        "value": "__build_weapp6.js",
+        "type": "file"
+      },
+      {
+        "value": "__build_weapp7.js",
+        "type": "file"
+      },
+      {
+        "value": "__build_weapp8.js",
+        "type": "file"
+      },
+      {
+        "value": "__ajv_retry_copy.js",
+        "type": "file"
+      },
+      {
+        "value": "__npm_run.log",
+        "type": "file"
+      },
+      {
+        "value": "__npm_run3.log",
+        "type": "file"
+      },
+      {
+        "value": "__install_ajv.log",
+        "type": "file"
+      },
+      {
+        "value": "__build_weapp.log",
+        "type": "file"
+      },
+      {
+        "value": "__build_weapp2.log",
+        "type": "file"
+      },
+      {
+        "value": "__build_weapp3.log",
+        "type": "file"
+      },
+      {
+        "value": "__build_weapp4.log",
+        "type": "file"
+      },
+      {
+        "value": "__build_weapp5.log",
+        "type": "file"
+      },
+      {
+        "value": "__build_weapp6.log",
+        "type": "file"
+      },
+      {
+        "value": "__build_weapp7.log",
+        "type": "file"
+      },
+      {
+        "value": "__build_weapp8.log",
+        "type": "file"
+      },
+      {
+        "value": "__npm_install_output.log",
+        "type": "file"
+      },
+      {
+        "value": ".npm-install.log",
+        "type": "file"
+      },
+      {
+        "value": ".npm-stdout.log",
+        "type": "file"
+      },
+      {
+        "value": ".npm-stderr.log",
+        "type": "file"
+      },
+      {
+        "value": ".venv_backup_path.txt",
+        "type": "file"
+      }
+    ],
+    "include": []
+  },
+  "compileType": "miniprogram",
+  "simulatorType": "wechat",
+  "simulatorPluginLibVersion": {},
+  "condition": {},
+  "editorSetting": {}
+}

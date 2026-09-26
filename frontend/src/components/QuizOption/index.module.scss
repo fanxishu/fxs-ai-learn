@@ -1,0 +1,66 @@
+@use '@/styles/variables.scss' as *;
+
+.opt {
+  display: flex;
+  align-items: flex-start;
+  gap: 40rpx;
+  padding: 48rpx 40rpx;
+  background: #ffffff;
+  border-radius: $radius-lg;
+  border: 3rpx solid $color-card-border;
+  min-height: 192rpx;
+  transition: all $transition-base;
+
+  &.state-selected {
+    border-color: $color-primary;
+    background: $color-primary-soft;
+    box-shadow: 0 6rpx 16rpx rgba(255, 122, 47, 0.18);
+
+    .optKey {
+      background: $color-primary;
+      color: $color-text-white;
+    }
+  }
+  &.state-correct {
+    border-color: $color-success;
+    background: $color-success-soft;
+
+    .optKey {
+      background: $color-success;
+      color: $color-text-white;
+    }
+  }
+  &.state-wrong {
+    border-color: $color-error;
+    background: $color-error-soft;
+
+    .optKey {
+      background: $color-error;
+      color: $color-text-white;
+    }
+  }
+  &.disabled {
+    opacity: 0.6;
+  }
+}
+
+.optKey {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  background: $color-bg-page;
+  color: $color-text-tertiary;
+  font-weight: 800;
+  font-size: $font-size-lg;
+  @include flex-center;
+  flex-shrink: 0;
+  box-shadow: 0 3rpx 10rpx rgba(44,30,9,0.06);
+}
+
+.optText {
+  font-size: $font-size-md;
+  line-height: $line-height-loose;
+  color: $color-text-primary;
+  flex: 1;
+  padding-top: 12rpx;
+}

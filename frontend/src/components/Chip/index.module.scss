@@ -1,0 +1,29 @@
+@use '@/styles/variables.scss' as *;
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: $radius-round;
+  font-weight: $font-weight-bold;
+  white-space: nowrap;
+  transition: all $transition-fast;
+
+  &:active {
+    transform: scale(0.96);
+  }
+
+  &.size-sm { padding: 8rpx 28rpx; font-size: $font-size-sm; }
+  &.size-md { padding: 12rpx 32rpx; font-size: $font-size-md; }
+
+  /* 实心系列（暖橙主色优先） */
+  &.color-orange { background: $color-primary-button-gradient; color: $color-text-white; box-shadow: 0 4rpx 12rpx rgba(255,122,47,0.22); }
+  &.color-blue   { background: $color-info; color: $color-text-white; }
+  &.color-purple { background: $color-purple; color: $color-text-white; }
+  &.color-green  { background: $color-success; color: $color-text-white; }
+  &.color-red    { background: $color-error; color: $color-text-white; }
+
+  /* 柔和系列（米色边框+浅底，贴合 Copilot 卡片风格） */
+  &.color-soft-blue   { background: $color-info-soft;    color: $color-info; border: 2rpx solid rgba(78,159,255,0.24); }
+  &.color-soft-orange { background: $color-primary-soft; color: $color-primary-dark; border: 2rpx solid $color-card-border; }
+}

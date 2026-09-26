@@ -1,0 +1,78 @@
+@use '@/styles/variables.scss' as *;
+
+.card {
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: 0 6rpx 18rpx rgba(44,30,9,0.08);
+  border: 2rpx solid $color-card-border;
+
+  &.variant-summary      { background: $color-bg-card; }
+  &.variant-advice       { background: $color-bg-card; }
+  &.variant-quote        { background: linear-gradient(135deg, #fff8ed, #ffe3c8); padding: 56rpx 48rpx; }
+  &.variant-mastery-good { background: $color-success-soft; }
+  &.variant-mastery-weak { background: $color-error-soft; }
+}
+
+.title {
+  display: block;
+  font-size: $font-size-md;
+  font-weight: $font-weight-bold;
+  margin-bottom: $spacing-sm;
+
+  .variant-mastery-good & { color: $color-success; }
+  .variant-mastery-weak & { color: $color-error; }
+}
+
+.summaryRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 32rpx;
+  padding: 16rpx 8rpx;
+}
+.summaryIdx {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  background: $color-primary-soft;
+  color: $color-primary;
+  font-weight: 800;
+  font-size: $font-size-lg;
+  @include flex-center;
+  flex-shrink: 0;
+}
+.summaryText {
+  font-size: $font-size-md;
+  line-height: $line-height-loose;
+  color: $color-text-primary;
+  flex: 1;
+  padding-top: 12rpx;
+}
+
+.adviceText {
+  font-size: $font-size-md;
+  line-height: $line-height-loose;
+  color: $color-text-primary;
+}
+
+.quoteMark {
+  font-size: 144rpx;
+  font-weight: 900;
+  color: $color-primary;
+  opacity: 0.3;
+  line-height: 1;
+  display: block;
+}
+.quoteText {
+  display: block;
+  font-size: $font-size-lg;
+  line-height: $line-height-loose;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  margin: 8rpx 0;
+}
+
+.list { display: flex; flex-direction: column; gap: 16rpx; }
+.pointGood   { font-size: $font-size-sm; line-height: $line-height-normal; color: #26795a; }
+.pointWeak   { font-size: $font-size-sm; line-height: $line-height-normal; color: #c44a3a; }
+.pointDefault{ font-size: $font-size-sm; line-height: $line-height-normal; color: $color-text-secondary; }
+.empty       { font-size: $font-size-sm; color: $color-text-tertiary; }

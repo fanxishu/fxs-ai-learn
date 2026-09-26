@@ -3,6 +3,7 @@ from __future__ import annotations
 import uuid
 import json
 import logging
+import re
 from pathlib import Path
 from typing import Optional
 
@@ -17,6 +18,46 @@ FIXTURE_PATH = BACKEND_ROOT / "tests" / "fixtures" / "quiz_fixture_5q.json"
 
 def _generate_quiz_id() -> str:
     return f"quiz-{uuid.uuid4().hex[:16]}"
+
+
+def _strip_json_fence(raw: str) -> str:
+    """
+    剥离 DeepSeek 可能返回的 Markdown 代码块围栏（```json ... ```）
+    以及前后的多余前缀/后缀文字，提取出裸 JSON 字符串。
+
+    规则（按优先级）：
+      1. 空输入 -> 返回空串
+      2. 若包含 ```，取第一对围栏之间的内容，且忽略第一行围栏后的语言标记
+      3. 否则若能匹配到最外层 { } 包围的大对象，则取该子串
+      4. 否则返回 strip() 后的原文（交给 Pydantic model_validate_json 抛错）
+    """
+    if raw is None:
+        return ""
+    if not isinstance(raw, str):
+        return ""
+    s = raw.strip()
+    if not s:
+        return ""
+
+    # 规则 2：Markdown 代码块围栏
+    fence_match = re.search(
+        r"```(?:[a-zA-Z0-9_\-]*)\s*\n?([\s\S]*?)```",
+        s,
+        flags=re.MULTILINE,
+    )
+    if fence_match:
+        s = fence_match.group(1).strip()
+        if not s:
+            return ""
+
+    # 规则 3：提取最外层 JSON 对象（兼容前后夹杂解释性文字的情况）
+    if not (s.startswith("{") and s.endswith("}")):
+        obj_start = s.find("{")
+        obj_end = s.rfind("}")
+        if obj_start != -1 and obj_end != -1 and obj_end > obj_start:
+            s = s[obj_start : obj_end + 1].strip()
+
+    return s
 
 
 def load_fallback_fixture() -> QuizGenerateResult:
@@ -100,22 +141,24 @@ class DeepSeekQuizLLM:
             if not isinstance(content, str) or not content.strip():
                 logger.warning("DeepSeekQuizLLM empty content returned")
                 return None
-            try:
-                parsed = QuizGenerateResult.model_validate_json(content)
-            except Exception as exc:  # noqa: BLE001
-                logger.warning("DeepSeekQuizLLM JSON->Pydantic parse failed: %s", exc)
-                cleaned = content.strip()
-                if cleaned.startswith("```"):
-                    lines = cleaned.splitlines()
-                    if lines and lines[0].strip().startswith("```"):
-                        lines = lines[1:]
-                    if lines and lines[-1].strip() == "```":
-                        lines = lines[:-1]
-                    cleaned = "\n".join(lines).strip()
-                parsed = QuizGenerateResult.model_validate_json(cleaned)
+            cleaned = _strip_json_fence(content)
+            parsed = QuizGenerateResult.model_validate_json(cleaned)
             if not parsed.quiz_id:
                 parsed.quiz_id = _generate_quiz_id()
             return parsed
+
+            # ============================================================
+            # with_structured_output 备份链（DeepSeek 未来支持 json_schema 后一键切换）
+            # 用法：把上方 llm.bind(response_format=...) 一整行 / chain 一整行注释掉，
+            #      然后取消下方注释即可，无需改动 Prompt 或 Pydantic Model。
+            # ------------------------------------------------------------
+            # structured_llm = llm.with_structured_output(QuizGenerateResult)
+            # chain = prompt | structured_llm
+            # parsed = await chain.ainvoke({"user_input": request.user_input})
+            # if not parsed.quiz_id:
+            #     parsed.quiz_id = _generate_quiz_id()
+            # return parsed
+            # ============================================================
         except Exception as exc:  # noqa: BLE001
             logger.warning("DeepSeekQuizLLM invoke failed: %s", exc)
             return None
@@ -230,20 +273,30 @@ class DeepSeekReportLLM:
             if not isinstance(content, str) or not content.strip():
                 logger.warning("DeepSeekReportLLM empty content returned")
                 return None
-            try:
-                parsed = ReportGenerateResult.model_validate_json(content)
-            except Exception as exc:  # noqa: BLE001
-                logger.warning("DeepSeekReportLLM JSON->Pydantic parse failed: %s", exc)
-                cleaned = content.strip()
-                if cleaned.startswith("```"):
-                    lines = cleaned.splitlines()
-                    if lines and lines[0].strip().startswith("```"):
-                        lines = lines[1:]
-                    if lines and lines[-1].strip() == "```":
-                        lines = lines[:-1]
-                    cleaned = "\n".join(lines).strip()
-                parsed = ReportGenerateResult.model_validate_json(cleaned)
+            cleaned = _strip_json_fence(content)
+            parsed = ReportGenerateResult.model_validate_json(cleaned)
             return parsed
+
+            # ============================================================
+            # with_structured_output 备份链（DeepSeek 未来支持 json_schema 后一键切换）
+            # 用法：把上方 llm.bind(response_format=...) 一整行 / chain 一整行注释掉，
+            #      然后取消下方注释即可，无需改动 Prompt 或 Pydantic Model。
+            # ------------------------------------------------------------
+            # structured_llm = llm.with_structured_output(ReportGenerateResult)
+            # chain = prompt | structured_llm
+            # parsed = await chain.ainvoke({
+            #     "score_summary": json.dumps(payload.get("score_summary"), ensure_ascii=False),
+            #     "per_knowledge_mastery": json.dumps(
+            #         [
+            #             m.model_dump() if hasattr(m, "model_dump") else (dict(m) if isinstance(m, dict) else {})
+            #             for m in payload.get("per_knowledge_mastery", [])
+            #         ],
+            #         ensure_ascii=False,
+            #     ),
+            #     "answer_records_brief": json.dumps(payload.get("answer_records_brief", []), ensure_ascii=False),
+            # })
+            # return parsed
+            # ============================================================
         except Exception as exc:  # noqa: BLE001
             logger.warning("DeepSeekReportLLM invoke failed: %s", exc)
             return None

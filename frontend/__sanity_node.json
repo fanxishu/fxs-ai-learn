@@ -1,0 +1,29 @@
+{
+  "start": "2026-09-25T18:14:24.550Z",
+  "base": {
+    "skipped": true,
+    "status": 0
+  },
+  "tarocli": {
+    "status": null,
+    "errLen": 0,
+    "outLen": 0,
+    "err": "Error: spawnSync C:\\Windows\\system32\\cmd.exe ETIMEDOUT",
+    "signal": "SIGTERM"
+  },
+  "lru7": {
+    "status": 0,
+    "errLen": 0,
+    "outLen": 23,
+    "err": "",
+    "signal": "",
+    "injected": true
+  },
+  "dirs": 1318,
+  "tarocliPkgExists": true,
+  "taroBinExists": false,
+  "ajvCodegenExists": true,
+  "rootLru": "NONE",
+  "babelLru": "7.18.3",
+  "end": "2026-09-25T18:17:27.293Z"
+}

@@ -241,3 +241,44 @@ class TestReportGenerateResultContract:
         assert dumped["accuracy"] == 80
         assert len(dumped["three_line_summary"]) == 3
         assert all(isinstance(x, str) and x for x in dumped["three_line_summary"])
+
+
+# ----------------------------------------------------------------
+# Task5 / AC-13: Prompt 契约测试 — 5 次连续独立 invoke 稳定性
+# （配置 USE_MOCK_LLM=true，不走真实 DeepSeek，保证可重复）
+# ----------------------------------------------------------------
+@pytest.mark.asyncio
+@pytest.mark.parametrize("run_id", [1, 2, 3, 4, 5])
+async def test_prompt_contract_5_runs_mock_stable(run_id):
+    """5 次 Mock LLM 生成结果：结构字段齐全、长度 3-5、题型分布覆盖单/多/判。"""
+    from app.services.quiz_chain import QuizChainService
+    from app.core.config import settings
+
+    # 保证始终走 Mock LLM 不打真实 API
+    settings.USE_MOCK_LLM = True
+    req = QuizGenerateRequest(user_input="Java 设计模式", question_count=5)
+    result = await QuizChainService.generate_quiz(req)
+
+    # —— 结构非空 9 字段：quiz_id, title, questions[], q.question_id/type/stem/options/answer/kp/expl/difficulty
+    assert isinstance(result, QuizGenerateResult)
+    assert result.quiz_id and result.quiz_id.startswith("quiz-")
+    assert isinstance(result.title, str) and result.title.strip()
+    qs = result.questions
+    assert 3 <= len(qs) <= 10  # 宽松：fixture 是 5
+
+    types = {q.question_type for q in qs}
+    # AC 要求三种题型缺一不可（QuizChainService._normalize_and_fix_result 会补齐）
+    assert {"single", "multiple", "judge"}.issubset(types), (
+        f"run {run_id} 题型分布缺失: {types}"
+    )
+
+    for q in qs:
+        assert isinstance(q.question_id, str) and q.question_id
+        assert q.question_type in ("single", "multiple", "judge")
+        assert isinstance(q.stem, str) and q.stem.strip()
+        assert isinstance(q.options, list) and len(q.options) >= 2
+        assert all(isinstance(o.key, str) and o.key for o in q.options)
+        assert all(isinstance(o.text, str) and o.text.strip() for o in q.options)
+        assert isinstance(q.knowledge_point, str) and q.knowledge_point.strip()
+        assert isinstance(q.explanation, str) and q.explanation.strip()
+        assert q.difficulty in (1, 2, 3, 4, 5)

@@ -1,0 +1,37 @@
+@use '@/styles/variables.scss' as *;
+
+.wrap {
+  position: relative;
+}
+
+.ring {
+  width: 100%;
+  height: 100%;
+}
+
+.inner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.num {
+  font-size: 192rpx;
+  font-weight: 900;
+  line-height: 1;
+  color: $color-primary;
+  background: $color-primary-button-gradient;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.unit {
+  font-size: 64rpx;
+  color: $color-text-secondary;
+  font-weight: 600;
+  margin-top: 16rpx;
+}

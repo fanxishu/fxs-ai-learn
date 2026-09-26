@@ -1,0 +1,61 @@
+node_modules/
+dist/
+.temp/
+.cache/
+.husky/_/
+.DS_Store
+Thumbs.db
+*.log
+*.local
+*.tsbuildinfo
+.eslintcache
+.stylelintcache
+coverage/
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.trae/rules/*
+.trae/cache/
+.trae/chat_history/
+!.trae/skills/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# ============================================
+# 敏感配置 & 密钥（严禁提交）
+# ============================================
+# 通用 dotenv 配置
+.env
+.env.*
+# 避免命中 .env.example / .env.sample 之类的模板时被误删
+!.env.example
+!.env.sample
+# 用户要求的 .envkey 文件
+.envkey
+# 旧命名兼容
+.env_key
+.env-keys
+
+# Python 虚拟环境 & 缓存
+backend/.venv/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/.pytest_cache/
+.pytest_cache/
+
+# 临时目录
+.tmp/
+backend/.tmp/
+frontend/.tmp/
+.npm-cache/
+
+# 小程序产物
+frontend/dist/
+mini-ci-result.json
+projectPrivateConfig.json
+

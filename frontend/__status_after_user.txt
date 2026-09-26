@@ -1,0 +1,9 @@
+node_modules exists? True
+subdirs count: 1013
+@tarojs/cli: False
+taro.cmd bin: True
+ajv codegen:  True
+root lru-cache: NONE
+babel nested lru: NONE
+dist dir exists? True
+  dist app.json: False

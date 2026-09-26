@@ -59,3 +59,12 @@ frontend/dist/
 mini-ci-result.json
 projectPrivateConfig.json
 
+# 已废弃的旧前端目录（沙箱残留锁句柄，重启 TRAE 后可手动删除）
+front-page/
+__front-page_orphan_to_delete/
+
+# 临时调试脚本（沙箱内生成的 __xxx.js 等一次性脚本，严禁提交）
+__*.js
+__*.py
+__*.ts
+

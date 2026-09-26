@@ -1,0 +1,13 @@
+{
+  "start": 1790360157742,
+  "cliBinSrcExists": false,
+  "lru7Ok": true,
+  "end": 1790360157752,
+  "durMs": 10,
+  "dirs": 1196,
+  "tarocliPkgExists": false,
+  "taroBinExists": false,
+  "ajvCodegenExists": false,
+  "rootLru": "NONE",
+  "babelLru": "7.18.3-manual"
+}

@@ -1,0 +1,7 @@
+﻿STAMP: 02:25:19
+subdirs: 1238
+TARO_CLI_PKG: False
+TARO_BIN:     False
+AJV_CODEGEN:  True
+ROOT_LRU:     NONE
+BABEL_LRU:    v7.18.3
