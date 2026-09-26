@@ -1,8 +1,0 @@
-dist\app.json: True
-pages index/quiz/report js files exist?
-  index.js:True
-  quiz.js:True
-  report.js:True
-total size (no map): 11886 bytes = 11.6 KB
-pages order: pages/index/index, pages/quiz/index, pages/report/index, pages/loading/index, pages/history/index, pages/mine/index
-tabBar selectedColor: #ff7a2f

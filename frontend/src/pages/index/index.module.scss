@@ -80,6 +80,18 @@
     font-weight: $font-weight-bold;
     color: $color-text-primary;
   }
+
+  .userBadgeWrap {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+
+    .greetText {
+      font-size: $font-size-sm;
+      color: $color-text-secondary;
+      font-weight: $font-weight-semibold;
+    }
+  }
 }
 
 .inputArea {

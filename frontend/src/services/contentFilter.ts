@@ -106,3 +106,34 @@ export function validateAndToast(raw: unknown): boolean {
   Taro.showToast({ title: msg, icon: 'none', duration: 2000 });
   return false;
 }
+
+const NICK_MIN_LEN = 1
+const NICK_MAX_LEN = 20
+
+export function validateNickname(raw: unknown): boolean {
+  if (raw == null) {
+    Taro.showToast({ title: '昵称不能为空', icon: 'none' })
+    return false
+  }
+  const text = typeof raw === 'string' ? raw : String(raw)
+  const trimmed = text.trim()
+  if (!trimmed) {
+    Taro.showToast({ title: '昵称不能为空', icon: 'none' })
+    return false
+  }
+  if (trimmed.length < NICK_MIN_LEN) {
+    Taro.showToast({ title: '昵称过短', icon: 'none' })
+    return false
+  }
+  if (trimmed.length > NICK_MAX_LEN) {
+    Taro.showToast({ title: `昵称最多 ${NICK_MAX_LEN} 字符`, icon: 'none' })
+    return false
+  }
+  for (const [re, label] of RE_BLOCKLIST) {
+    if (re.test(trimmed)) {
+      Taro.showToast({ title: `昵称不合规：${label}`, icon: 'none', duration: 2000 })
+      return false
+    }
+  }
+  return true
+}

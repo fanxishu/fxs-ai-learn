@@ -8,6 +8,13 @@ import type {
 } from '@/types/quiz'
 import { mockQuiz, mockReport } from '@/data/quizMock'
 import { ErrorCode, ERROR_TOAST } from '@/types/common'
+import type {
+  UserLoginResponse,
+  UserProfileResponse,
+  UpdateProfileRequest,
+  QuizHistoryListResponse,
+  QuizDetailResponse,
+} from '@/types/user'
 
 const getEnv = (key: string, fallback: string = ''): string => {
   try {
@@ -20,6 +27,33 @@ const getEnv = (key: string, fallback: string = ''): string => {
 
 const BASE_URL = getEnv('TARO_APP_API_BASE', 'http://127.0.0.1:8000')
 const API_PREFIX = '/api/v1'
+
+const AUTH_TOKEN_KEY = 'auth_token'
+
+export const getAuthToken = (): string => {
+  try { return Taro.getStorageSync(AUTH_TOKEN_KEY) as string || '' } catch (_) { return '' }
+}
+
+export const setAuthToken = (token: string): void => {
+  try { Taro.setStorageSync(AUTH_TOKEN_KEY, token) } catch (_) { /* noop */ }
+}
+
+export const clearAuthToken = (): void => {
+  try { Taro.removeStorageSync(AUTH_TOKEN_KEY) } catch (_) { /* noop */ }
+}
+
+let _tokenClearedToast = false
+const dispatchUnauthCleanup = (code: number) => {
+  if (code !== ErrorCode.UNAUTHORIZED && code !== ErrorCode.TOKEN_EXPIRED) return
+  clearAuthToken()
+  if (!_tokenClearedToast) {
+    _tokenClearedToast = true
+    try {
+      Taro.showToast({ title: ERROR_TOAST[code] || '请重新登录', icon: 'none', duration: 1800 })
+    } catch (_) { /* noop */ }
+    setTimeout(() => { _tokenClearedToast = false }, 2000)
+  }
+}
 
 /**
  * 把后端返回的 code 映射到用户可读 Toast 文案。
@@ -41,31 +75,34 @@ function codeToToast(code: number, fallback: string): string {
 export async function request<T = unknown>(
   path: string,
   data?: unknown,
-  method: 'GET' | 'POST' = 'POST',
+  method: 'GET' | 'POST' | 'PUT' = 'POST',
 ): Promise<ApiResponse<T>> {
   const url = `${BASE_URL}${API_PREFIX}${path}`
   console.log(`[API] ${method} ${url}`, data)
+
+  const token = getAuthToken()
+  const header: Record<string, string> = { 'Content-Type': 'application/json' }
+  if (token) header['Authorization'] = `Bearer ${token}`
 
   try {
     const res = await Taro.request<ApiResponse<T>>({
       url,
       method,
       data,
-      header: { 'Content-Type': 'application/json' },
+      header,
       timeout: 30000,
     })
     const body = res.data ?? ({} as ApiResponse<T>)
-    // 兼容后端可能不返回 code 的场景
     if (typeof body.code !== 'number') {
       body.code = ErrorCode.INTERNAL_SERVER_ERROR
       body.message = body.message || '服务返回格式异常'
     }
+    dispatchUnauthCleanup(body.code)
     console.log(`[API] ${url} -> code=${body.code} msg=${body.message}`)
     return body
   } catch (err: unknown) {
     console.error(`[API] ${url} 网络异常:`, err)
     const msg = err instanceof Error ? err.message : 'Network Error'
-    // Task10 分支：Network Error 统一错误码
     const code: number =
       /timeout/i.test(msg) ? ErrorCode.DEEPSEEK_TIMEOUT
       : ErrorCode.INTERNAL_SERVER_ERROR
@@ -90,10 +127,8 @@ export const API = {
   async generateQuiz(payload: QuizGenerateRequest): Promise<ApiResponse<QuizGenerateResult>> {
     const res = await request<QuizGenerateResult>('/quiz/generate', payload)
     if (res.code === 0 && res.data) return res
-    // 用户文案 Toast（仅一次）
     const toast = codeToToast(res.code, res.message || '生成失败，请重试')
     if (toast) toastError(toast)
-    // 兜底 mock
     console.warn('[API] generateQuiz 失败（code=' + res.code + '），使用 mock 数据')
     return { code: 0, message: 'ok', data: mockQuiz(payload) }
   },
@@ -107,5 +142,26 @@ export const API = {
     if (toast) toastError(toast)
     console.warn('[API] generateReport 失败（code=' + res.code + '），使用 mock 数据')
     return { code: 0, message: 'ok', data: mockReport(payload) }
+  },
+
+  async loginWx(code: string): Promise<ApiResponse<UserLoginResponse>> {
+    return request<UserLoginResponse>('/user/login', { code })
+  },
+
+  async getProfile(): Promise<ApiResponse<UserProfileResponse>> {
+    return request<UserProfileResponse>('/user/profile', undefined, 'GET')
+  },
+
+  async updateProfile(payload: UpdateProfileRequest): Promise<ApiResponse<UserProfileResponse>> {
+    return request<UserProfileResponse>('/user/profile', payload, 'PUT')
+  },
+
+  async listQuizzes(page = 1, page_size = 20): Promise<ApiResponse<QuizHistoryListResponse>> {
+    const qs = `?page=${page}&page_size=${page_size}`
+    return request<QuizHistoryListResponse>(`/user/quizzes${qs}`, undefined, 'GET')
+  },
+
+  async getQuizDetail(quiz_id: string): Promise<ApiResponse<QuizDetailResponse>> {
+    return request<QuizDetailResponse>(`/user/quizzes/${quiz_id}`, undefined, 'GET')
   },
 }

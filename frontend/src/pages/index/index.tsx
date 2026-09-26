@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import classnames from 'classnames'
@@ -11,9 +11,11 @@ import {
   StateBadge,
 } from '@/components'
 import { useQuizStore } from '@/store/quiz'
+import { useUserStore } from '@/store/user'
 import { API, toastError } from '@/services/api'
 import { validateAndToast } from '@/services/contentFilter'
 import type { HistoryItem } from '@/types/quiz'
+import type { QuizHistoryItem as UserQuizHistoryItem } from '@/types/user'
 import {
   DEFAULT_QUESTION_COUNT,
   INPUT_MAX_LEN,
@@ -39,17 +41,47 @@ export default function HomePage() {
   const loadHistory = useQuizStore(s => s.loadHistory)
   const history = useQuizStore(s => s.history)
 
+  const isLoggedIn = useUserStore(s => s.isLoggedIn)
+  const user = useUserStore(s => s.user)
+  const total_xp = user?.total_xp ?? 0
+  const nickname = user?.nickname || '学习者'
+
   const [loading, setLoading] = React.useState(false)
+  const [userRecent, setUserRecent] = useState<UserQuizHistoryItem[] | null>(null)
 
   useDidShow(() => {
     loadHistory()
+    if (isLoggedIn) {
+      API.listQuizzes(1, 3).then(res => {
+        if (res.code === 0 && res.data) setUserRecent(res.data.items || [])
+      }).catch(() => { /* fallback to local history */ })
+    } else {
+      setUserRecent(null)
+    }
   })
 
   useEffect(() => {
     loadHistory()
-  }, [loadHistory])
+    if (isLoggedIn) {
+      API.listQuizzes(1, 3).then(res => {
+        if (res.code === 0 && res.data) setUserRecent(res.data.items || [])
+      }).catch(() => {})
+    }
+  }, [loadHistory, isLoggedIn])
 
-  const recent = useMemo<HistoryItem[]>(() => (history || []).slice(0, 3), [history])
+  const recent = useMemo(() => {
+    if (userRecent && userRecent.length) {
+      return userRecent.map(x => ({
+        id: x.quiz_id,
+        title: x.title,
+        correct: x.correct_count,
+        total: x.question_count,
+        accuracy: x.accuracy,
+        created_at: x.created_at,
+      })) as unknown as HistoryItem[]
+    }
+    return (history || []).slice(0, 3)
+  }, [userRecent, history])
 
   const canSubmit = input.trim().length >= INPUT_MIN_LEN && input.trim().length <= INPUT_MAX_LEN
 
@@ -114,7 +146,10 @@ export default function HomePage() {
           <Text>🐟</Text>
           <Text>鱼皮 AI 闯关</Text>
         </View>
-        <CoinBadge variant='pill'>AI 出题 · 立即闯关</CoinBadge>
+        <View className={styles.userBadgeWrap}>
+          <Text className={styles.greetText}>Hi, {nickname}</Text>
+          <CoinBadge variant='pill'>🔥 XP {total_xp}</CoinBadge>
+        </View>
       </View>
 
       <View className={styles.hero}>

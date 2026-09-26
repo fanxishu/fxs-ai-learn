@@ -32,20 +32,16 @@ export default function ReportPage() {
   const reset = useQuizStore(s => s.reset)
 
   useEffect(() => {
-    if (!report) {
-      const p = loadReportPayload()
-      if (p) {
-        setQuiz(p.quiz as QuizGenerateResult)
-        setRecords(p.answer_records)
-        setReport(p.report)
-        return
-      }
-    }
-    if (!quiz) {
+    const payload = loadReportPayload()
+    if (payload) {
+      if (!quiz) setQuiz(payload.quiz as QuizGenerateResult)
+      if (!records || !records.length) setRecords(payload.answer_records)
+      if (!report) setReport(payload.report)
+    } else if (!quiz) {
       const s = loadQuizSession()
       if (s?.quiz) setQuiz(s.quiz)
     }
-  }, [quiz, report, loadQuizSession, loadReportPayload, setQuiz, setRecords, setReport])
+  }, [quiz, report, records, loadQuizSession, loadReportPayload, setQuiz, setRecords, setReport])
 
   const questions = useMemo<Question[]>(() => (quiz?.questions as Question[]) || [], [quiz])
   const acc = useMemo(() => report?.accuracy ?? (records.length

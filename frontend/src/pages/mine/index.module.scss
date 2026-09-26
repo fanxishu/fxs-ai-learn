@@ -138,6 +138,115 @@
   }
 }
 
+.profile .info .nameRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+
+  .editIcon {
+    font-size: $font-size-sm;
+    padding: 6rpx 12rpx;
+    border-radius: $radius-round;
+    background: rgba(255, 255, 255, 0.22);
+  }
+}
+
+.profile .avatar .avatarImg {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: $spacing-xs 0 0;
+
+  .left {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-semibold;
+    color: $color-text-primary;
+  }
+
+  .right {
+    font-size: $font-size-sm;
+    color: $color-primary-dark;
+    font-weight: $font-weight-semibold;
+  }
+}
+
+.historyList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+
+  .historyCard {
+    padding: $spacing-lg;
+    background: $color-bg-card;
+    border-radius: $radius-lg;
+    box-shadow: 0 6rpx 18rpx rgba(44,30,9,0.07);
+    border: 2rpx solid $color-card-border;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+    transition: all $transition-base;
+
+    &:active {
+      transform: scale(0.99);
+      box-shadow: $color-primary-shadow-soft;
+    }
+
+    .rowTop {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: $spacing-sm;
+    }
+
+    .title {
+      font-size: $font-size-md;
+      font-weight: $font-weight-semibold;
+      color: $color-text-primary;
+      @include text-ellipsis;
+      flex: 1;
+    }
+
+    .sub {
+      display: flex;
+      align-items: center;
+      gap: $spacing-sm;
+      font-size: $font-size-sm;
+      color: $color-text-tertiary;
+      flex-wrap: wrap;
+    }
+
+    .score {
+      font-weight: $font-weight-semibold;
+    }
+
+    .xpTag {
+      color: $color-primary-dark;
+      font-weight: $font-weight-semibold;
+    }
+
+    .high { color: $color-mastery-high; }
+    .mid { color: $color-mastery-mid; }
+    .low { color: $color-mastery-low; }
+  }
+
+  .empty {
+    padding: 48rpx $spacing-lg;
+    border-radius: $radius-lg;
+    background: $color-bg-card;
+    border: 2rpx dashed $color-border;
+    text-align: center;
+    color: $color-text-tertiary;
+    font-size: $font-size-md;
+  }
+}
+
 .tip {
   padding: $spacing-lg;
   border-radius: $radius-lg;
@@ -147,4 +256,55 @@
   color: $color-text-secondary;
   font-size: $font-size-sm;
   line-height: 1.7;
+}
+
+.modalMask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  padding: 40rpx;
+}
+
+.modalCard {
+  width: 100%;
+  max-width: 600rpx;
+  background: $color-bg-card;
+  border-radius: $radius-xl;
+  padding: 48rpx 40rpx;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+  box-shadow: 0 20rpx 60rpx rgba(0, 0, 0, 0.18);
+}
+
+.modalTitle {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+}
+
+.modalInput {
+  width: 100%;
+  padding: 24rpx;
+  font-size: $font-size-md;
+  border-radius: $radius-md;
+  border: 2rpx solid $color-card-border;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.modalActions {
+  display: flex;
+  gap: $spacing-md;
+  justify-content: flex-end;
+  margin-top: $spacing-sm;
+
+  .modalBtn {
+    flex: 0 0 auto;
+    min-width: 180rpx;
+  }
 }

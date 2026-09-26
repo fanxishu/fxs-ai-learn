@@ -1,0 +1,157 @@
+import { create } from 'zustand'
+import Taro from '@tarojs/taro'
+import {
+  API,
+  clearAuthToken,
+  setAuthToken as writeTokenStorage,
+  getAuthToken as readTokenStorage,
+  toastError,
+} from '@/services/api'
+import type {
+  UserProfile,
+  ProfileStats,
+  UserLoginResponse,
+  UserProfileResponse,
+} from '@/types/user'
+
+export interface UserStoreState {
+  token: string
+  isLoggedIn: boolean
+  user: UserProfile | null
+  stats: ProfileStats | null
+  loading: boolean
+
+  setToken: (token: string) => void
+  setUser: (u: UserProfile | null) => void
+  setStats: (s: ProfileStats | null) => void
+  setIsLoggedIn: (v: boolean) => void
+  clearAuth: () => void
+
+  wxLoginFlow: () => Promise<boolean>
+  refreshProfile: () => Promise<boolean>
+  updateNickname: (nickname: string) => Promise<boolean>
+  updateAvatar: (avatar_url: string) => Promise<boolean>
+}
+
+export const useUserStore = create<UserStoreState>((set, get) => ({
+  token: '',
+  isLoggedIn: false,
+  user: null,
+  stats: null,
+  loading: false,
+
+  setToken: (t) => {
+    set({ token: t })
+    if (t) {
+      writeTokenStorage(t)
+      set({ isLoggedIn: true })
+    } else {
+      clearAuthToken()
+      set({ isLoggedIn: false })
+    }
+  },
+  setUser: (u) => set({ user: u }),
+  setStats: (s) => set({ stats: s }),
+  setIsLoggedIn: (v) => set({ isLoggedIn: v }),
+  clearAuth: () => {
+    clearAuthToken()
+    set({ token: '', isLoggedIn: false, user: null, stats: null })
+  },
+
+  wxLoginFlow: async () => {
+    try {
+      const exist = readTokenStorage()
+      if (exist) {
+        set({ token: exist, isLoggedIn: true })
+        await get().refreshProfile()
+        return true
+      }
+      set({ loading: true })
+      const loginRes = await Taro.login()
+      if (!loginRes || !loginRes.code) {
+        console.warn('[UserStore] wx.login returned no code')
+        return false
+      }
+      const res = await API.loginWx(loginRes.code)
+      if (res.code !== 0 || !res.data) {
+        console.warn('[UserStore] /user/login failed code=', res.code, 'msg=', res.message)
+        return false
+      }
+      const payload = res.data as UserLoginResponse
+      set({ token: payload.token, user: payload.user, isLoggedIn: true })
+      writeTokenStorage(payload.token)
+      set({ loading: false })
+      return true
+    } catch (err) {
+      console.error('[UserStore] wxLoginFlow error:', err)
+      return false
+    } finally {
+      set({ loading: false })
+    }
+  },
+
+  refreshProfile: async () => {
+    if (!get().isLoggedIn && !readTokenStorage()) return false
+    try {
+      set({ loading: true })
+      const res = await API.getProfile()
+      if (res.code !== 0 || !res.data) {
+        if (res.code === 2001 || res.code === 2002) get().clearAuth()
+        return false
+      }
+      const data = res.data as UserProfileResponse
+      set({ user: data.user, stats: data.stats })
+      return true
+    } catch (err) {
+      console.error('[UserStore] refreshProfile error:', err)
+      return false
+    } finally {
+      set({ loading: false })
+    }
+  },
+
+  updateNickname: async (nickname: string) => {
+    if (!nickname || !nickname.trim()) {
+      toastError('昵称不能为空')
+      return false
+    }
+    try {
+      set({ loading: true })
+      const res = await API.updateProfile({ nickname: nickname.trim() })
+      if (res.code !== 0 || !res.data) {
+        if (res.message) toastError(res.message)
+        return false
+      }
+      const data = res.data as UserProfileResponse
+      set({ user: data.user, stats: data.stats })
+      Taro.showToast({ title: '修改成功', icon: 'success', duration: 1500 })
+      return true
+    } catch (err) {
+      console.error('[UserStore] updateNickname error:', err)
+      toastError('修改失败，请重试')
+      return false
+    } finally {
+      set({ loading: false })
+    }
+  },
+
+  updateAvatar: async (avatar_url: string) => {
+    if (!avatar_url) return false
+    try {
+      set({ loading: true })
+      const res = await API.updateProfile({ avatar_url })
+      if (res.code !== 0 || !res.data) {
+        if (res.message) toastError(res.message)
+        return false
+      }
+      const data = res.data as UserProfileResponse
+      set({ user: data.user, stats: data.stats })
+      return true
+    } catch (err) {
+      console.error('[UserStore] updateAvatar error:', err)
+      return false
+    } finally {
+      set({ loading: false })
+    }
+  },
+}))
