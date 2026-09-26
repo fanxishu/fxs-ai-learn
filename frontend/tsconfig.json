@@ -19,7 +19,6 @@
     "allowJs": true,
     "resolveJsonModule": true,
     "typeRoots": ["node_modules/@types"],
-    "types": [],
     "paths": {
       "@/*": ["src/*"]
     }
