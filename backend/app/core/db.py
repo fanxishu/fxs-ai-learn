@@ -76,6 +76,7 @@ CREATE TABLE IF NOT EXISTS quiz_sessions (
     summary TEXT NULL,
     user_input TEXT NULL,
     questions_json JSON NULL,
+    question_count INT NOT NULL DEFAULT 0,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_quiz_sessions_user_id (user_id),
     INDEX idx_quiz_sessions_created_at (created_at),
@@ -106,6 +107,8 @@ CREATE TABLE IF NOT EXISTS reports (
     quiz_id VARCHAR(64) NOT NULL UNIQUE,
     user_id BIGINT UNSIGNED NOT NULL,
     report_json JSON NULL,
+    accuracy DECIMAL(5, 2) NOT NULL DEFAULT 0.00,
+    total_xp INT NOT NULL DEFAULT 0,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_reports_user_id (user_id),
     INDEX idx_reports_created_at (created_at),
@@ -128,5 +131,24 @@ async def create_tables_if_not_exists() -> None:
             for name, sql in statements:
                 logger.info("Ensuring table exists: %s", name)
                 await cur.execute(sql)
+
+            logger.info("Applying schema migrations (ADD COLUMN if missing)...")
+            migrations = [
+                ("quiz_sessions", "question_count",
+                 "ALTER TABLE quiz_sessions ADD COLUMN question_count INT NOT NULL DEFAULT 0 AFTER questions_json"),
+                ("quiz_sessions", "total_xp",
+                 "ALTER TABLE quiz_sessions ADD COLUMN total_xp INT NOT NULL DEFAULT 0 AFTER question_count"),
+            ]
+            for table, column, ddl in migrations:
+                await cur.execute(
+                    "SELECT COUNT(*) FROM information_schema.COLUMNS "
+                    "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = %s AND COLUMN_NAME = %s",
+                    (table, column),
+                )
+                row = await cur.fetchone()
+                c = int(row[0]) if row and row[0] is not None else 0
+                if c == 0:
+                    logger.info("Adding missing column %s.%s", table, column)
+                    await cur.execute(ddl)
             await conn.commit()
-    logger.info("All 4 tables ensured")
+    logger.info("All 4 tables ensured + migrations applied")

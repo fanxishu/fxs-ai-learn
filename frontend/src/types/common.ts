@@ -14,6 +14,7 @@ export const ErrorCode = {
   // 2000~2999：鉴权 / 用户错误
   UNAUTHORIZED: 2001,
   TOKEN_EXPIRED: 2002,
+  NOT_LOGGED_IN: 2003,
 
   // 3000~3999：内容安全错误
   INPUT_CONTENT_VIOLATION: 3001,
@@ -51,6 +52,7 @@ export const ERROR_TOAST: Record<number, string> = {
   [ErrorCode.INPUT_TOO_SHORT]: '输入内容过短，请提供更详细的学习主题',
   [ErrorCode.UNAUTHORIZED]: '请先登录后再使用',
   [ErrorCode.TOKEN_EXPIRED]: '登录已过期，请重新登录',
+  [ErrorCode.NOT_LOGGED_IN]: '请先登录后再使用本功能',
   [ErrorCode.INPUT_CONTENT_VIOLATION]: '输入内容不合规，请修改后重试',
   [ErrorCode.OUTPUT_CONTENT_VIOLATION]: '生成内容包含违规信息，请重试',
   [ErrorCode.QUIZ_NOT_FOUND]: '题库不存在或已过期，请重新生成',

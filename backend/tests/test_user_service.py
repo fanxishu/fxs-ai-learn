@@ -79,8 +79,9 @@ async def test_update_profile_valid_calls_repo(db_pool_cur):
     cur.fetchone.side_effect = [user_row, stats_row]
     with patch("app.services.user_service._get_filter", return_value=MagicMock(find_all=lambda text: [])):
         prof = await svc.update_profile(1, "新昵称", None)
-    assert prof.nickname == "新昵称"
-    assert prof.quiz_count == 2 and prof.correct_count == 7 and prof.average_accuracy == 70
+    assert prof.user.nickname == "新昵称"
+    assert prof.stats.quiz_count == 2 and prof.stats.correct_count == 7 and prof.stats.average_accuracy == 70
+    assert prof.stats.total_questions == 10
 
 
 @pytest.mark.asyncio
@@ -96,9 +97,10 @@ async def test_get_full_profile_uses_stats_aggregation(db_pool_cur):
         return (5, 18, 24)  # quiz_count=5, correct=18, total_q=24 → 75%
     cur.fetchone.side_effect = lambda: _fetch()
     p = await svc.get_full_profile(1)
-    assert p.id == 1 and p.total_xp == 100
-    assert p.quiz_count == 5 and p.correct_count == 18
-    assert p.average_accuracy == 75  # 18/24 = 0.75
+    assert p.user.id == 1 and p.user.total_xp == 100
+    assert p.stats.quiz_count == 5 and p.stats.correct_count == 18
+    assert p.stats.total_questions == 24
+    assert p.stats.average_accuracy == 75  # 18/24 = 0.75
 
 @pytest.mark.asyncio
 async def test_quiz_detail_越权_returns_4001_not_found(db_pool_cur):

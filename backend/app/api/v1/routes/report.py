@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, Request
 from pydantic import ValidationError
 
 from app.core.auth import get_current_user_id_optional
+from app.core.exceptions import ErrorCode, NotLoggedInError
 from app.models.common import ApiResponse, error_response, ok_response
 from app.models.report import ReportGenerateRequest
 from app.repositories import (
@@ -28,9 +29,10 @@ async def _persist_report_and_xp_if_logged_in(
     report_dump,
 ) -> None:
     if not user_id:
+        _log.info("Persist report/xp skipped (anonymous) quiz_id=%s", quiz_id)
         return
+    uid = int(user_id)
     try:
-        uid = int(user_id)
         await AnswerRecordRepository.create(
             quiz_id=quiz_id,
             user_id=uid,
@@ -39,21 +41,38 @@ async def _persist_report_and_xp_if_logged_in(
             correct_count=int(correct_count),
             accuracy=float(accuracy_pct),
         )
+        _log.info("Persist answer_records OK quiz_id=%s user_id=%s", quiz_id, uid)
+        delta_xp = 10 + (2 * int(correct_count))
         try:
             await ReportRepository.create(
                 quiz_id=quiz_id,
                 user_id=uid,
                 report_json=report_dump,
+                accuracy=float(accuracy_pct),
+                total_xp=int(delta_xp),
             )
+            _log.info("Persist report OK quiz_id=%s user_id=%s xp=%s", quiz_id, uid, delta_xp)
         except Exception as exc:  # noqa: BLE001
-            _log.warning("Persist report body failed (records persisted) quiz_id=%s err=%s", quiz_id, exc)
+            import traceback as _tb
+            _log.error(
+                "Persist report FAILED (records persisted) quiz_id=%s user_id=%s err=%s\nTB:\n%s",
+                quiz_id, uid, exc, _tb.format_exc(),
+            )
         try:
-            delta_xp = 10 + (2 * int(correct_count))
-            await UserRepository.add_xp(uid, delta_xp)
+            new_xp = await UserRepository.add_xp(uid, delta_xp)
+            _log.info("XP accumulate OK user_id=%s delta=%s new=%s", uid, delta_xp, new_xp)
         except Exception as exc:  # noqa: BLE001
-            _log.warning("XP accumulate failed quiz_id=%s err=%s", quiz_id, exc)
+            import traceback as _tb2
+            _log.error(
+                "XP accumulate FAILED quiz_id=%s user_id=%s delta=%s err=%s\nTB:\n%s",
+                quiz_id, uid, delta_xp, exc, _tb2.format_exc(),
+            )
     except Exception as exc:  # noqa: BLE001
-        _log.warning("Persist answer records failed (non-fatal) quiz_id=%s err=%s", quiz_id, exc)
+        import traceback as _tb3
+        _log.error(
+            "Persist answer records FAILED (non-fatal) quiz_id=%s user_id=%s err=%s\nTB:\n%s",
+            quiz_id, uid, exc, _tb3.format_exc(),
+        )
 
 
 @router.post("/generate")
@@ -61,6 +80,11 @@ async def generate_report(
     request: Request,
     user_id: int | None = Depends(get_current_user_id_optional),
 ) -> ApiResponse:
+    if not user_id:
+        return error_response(
+            int(ErrorCode.NOT_LOGGED_IN),
+            NotLoggedInError.message,
+        )
     try:
         raw = await request.json()
     except Exception:

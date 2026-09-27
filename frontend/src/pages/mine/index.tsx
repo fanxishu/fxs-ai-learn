@@ -30,17 +30,24 @@ export default function MinePage() {
   const [nickModalOpen, setNickModalOpen] = useState(false)
   const [nickInput, setNickInput] = useState('')
 
-  useDidShow(() => {
+  useDidShow(async () => {
     loadHistory()
-    if (isLoggedIn) {
-      refreshProfile().then(() => { /* noop */ })
-      loadUserQuizzes()
+    const userState = useUserStore.getState()
+    if (!userState.isLoggedIn) await userState.wxLoginFlow()
+    if (useUserStore.getState().isLoggedIn) {
+      try { await useUserStore.getState().refreshProfile() } catch (_) { /* noop */ }
+      await loadUserQuizzes()
     }
   })
 
   useEffect(() => {
-    if (isLoggedIn) loadUserQuizzes()
-  }, [isLoggedIn])
+    const run = async () => {
+      const userState = useUserStore.getState()
+      if (!userState.isLoggedIn) await userState.wxLoginFlow()
+      if (useUserStore.getState().isLoggedIn) await loadUserQuizzes()
+    }
+    run().catch(err => console.warn('[Mine] mount refresh err:', err))
+  }, [])
 
   const loadUserQuizzes = async () => {
     try {

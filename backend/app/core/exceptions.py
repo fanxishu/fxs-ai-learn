@@ -22,6 +22,7 @@ class ErrorCode(IntEnum):
     # 2000~2999：鉴权 / 用户错误
     UNAUTHORIZED = 2001
     TOKEN_EXPIRED = 2002
+    NOT_LOGGED_IN = 2003
 
     # 3000~3999：内容安全错误
     INPUT_CONTENT_VIOLATION = 3001
@@ -88,6 +89,11 @@ class UnauthorizedError(FishAIException):
 class TokenExpiredError(FishAIException):
     code = int(ErrorCode.TOKEN_EXPIRED)
     message = "登录状态已过期，请重新登录"
+
+
+class NotLoggedInError(FishAIException):
+    code = int(ErrorCode.NOT_LOGGED_IN)
+    message = "请先登录后再使用本功能"
 
 
 # ============ 3000 内容安全错误 ============

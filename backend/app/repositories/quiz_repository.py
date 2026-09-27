@@ -67,9 +67,12 @@ class QuizSessionRepository:
                 sql = (
                     "SELECT qs.quiz_id, qs.title, qs.created_at, "
                     "COALESCE(ar.total_questions,0) AS question_count, "
-                    "COALESCE(ar.accuracy,0) AS accuracy "
+                    "COALESCE(ar.accuracy,0) AS accuracy, "
+                    "COALESCE(r.total_xp,0) AS total_xp, "
+                    "COALESCE(ar.correct_count,0) AS correct_count "
                     f"FROM {cls.TABLE} qs "
                     "LEFT JOIN answer_records ar ON qs.quiz_id = ar.quiz_id AND ar.user_id = qs.user_id "
+                    "LEFT JOIN reports r ON qs.quiz_id = r.quiz_id AND r.user_id = qs.user_id "
                     "WHERE qs.user_id = %s "
                     "ORDER BY qs.created_at DESC, qs.id DESC "
                     "LIMIT %s OFFSET %s"
@@ -89,6 +92,8 @@ class QuizSessionRepository:
                 "created_at": r[2].isoformat() if r[2] else None,
                 "question_count": int(r[3] or 0),
                 "accuracy": acc,
+                "total_xp": int(r[5] or 0),
+                "correct_count": int(r[6] or 0),
             })
         return items, total
 

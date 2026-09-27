@@ -12,6 +12,7 @@ import {
   StateBadge,
 } from '@/components'
 import { useQuizStore } from '@/store/quiz'
+import { useUserStore } from '@/store/user'
 import type {
   AnswerRecord,
   Question,
@@ -64,6 +65,12 @@ export default function QuizPage() {
   const [loadingReport, setLoadingReport] = useState(false)
 
   useEffect(() => {
+    const hasQuiz = !!(quiz && quiz.questions.length > 0) || !!loadQuizSession()?.quiz
+    if (!useUserStore.getState().isLoggedIn && !hasQuiz) {
+      try { Taro.showToast({ title: '请先登录后再使用本功能', icon: 'none', duration: 1800 }) } catch (_) { /* noop */ }
+      try { Taro.redirectTo({ url: '/pages/index/index' }) } catch (_) { /* noop */ }
+      return
+    }
     const boot = () => {
       if (quiz && quiz.questions.length > 0) return
       const sess = loadQuizSession()
@@ -182,6 +189,14 @@ export default function QuizPage() {
   }
 
   const finishQuiz = async () => {
+    const userState = useUserStore.getState()
+    if (!userState.isLoggedIn) {
+      const ok = await userState.wxLoginFlow()
+      if (!ok) {
+        toastError('微信登录失败，请稍后重试')
+        return
+      }
+    }
     setLoadingReport(true)
     try {
       const finalRecords = (records || []).slice()

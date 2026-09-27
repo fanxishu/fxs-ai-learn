@@ -8,20 +8,29 @@ function App(props) {
   const refreshProfile = useUserStore(s => s.refreshProfile)
   const isLoggedIn = useUserStore(s => s.isLoggedIn)
   const hasAutoLogin = useRef(false)
+  const autoLoginRunning = useRef(false)
 
   useEffect(() => {
-    if (!hasAutoLogin.current) {
+    if (!hasAutoLogin.current && !autoLoginRunning.current) {
       hasAutoLogin.current = true
-      wxLoginFlow().catch(err => console.error('[App] auto-login error', err))
+      autoLoginRunning.current = true
+      wxLoginFlow()
+        .then(ok => console.info('[App] auto-login ok=', ok))
+        .catch(err => console.error('[App] auto-login error', err))
+        .finally(() => { autoLoginRunning.current = false })
     }
   }, [wxLoginFlow])
 
   useDidShow(() => {
     if (isLoggedIn) {
       refreshProfile().catch(err => console.error('[App] didShow refreshProfile error', err))
-    } else if (!hasAutoLogin.current) {
+    } else if (!hasAutoLogin.current && !autoLoginRunning.current) {
       hasAutoLogin.current = true
-      wxLoginFlow().catch(err => console.error('[App] didShow login error', err))
+      autoLoginRunning.current = true
+      wxLoginFlow()
+        .then(ok => console.info('[App] didShow-login ok=', ok))
+        .catch(err => console.error('[App] didShow login error', err))
+        .finally(() => { autoLoginRunning.current = false })
     }
   });
 

@@ -12,6 +12,7 @@ import {
   StateBadge,
 } from '@/components'
 import { useQuizStore } from '@/store/quiz'
+import { useUserStore } from '@/store/user'
 import type {
   AnswerRecord,
   Question,
@@ -32,6 +33,12 @@ export default function ReportPage() {
   const reset = useQuizStore(s => s.reset)
 
   useEffect(() => {
+    const hasReport = !!(report || loadReportPayload() || (quiz && quiz.questions.length > 0) || loadQuizSession()?.quiz)
+    if (!useUserStore.getState().isLoggedIn && !hasReport) {
+      try { Taro.showToast({ title: '请先登录后再使用本功能', icon: 'none', duration: 1800 }) } catch (_) { /* noop */ }
+      try { Taro.redirectTo({ url: '/pages/index/index' }) } catch (_) { /* noop */ }
+      return
+    }
     const payload = loadReportPayload()
     if (payload) {
       if (!quiz) setQuiz(payload.quiz as QuizGenerateResult)

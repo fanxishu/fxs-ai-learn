@@ -2,11 +2,12 @@ import type { ApiResponse } from './common'
 import type { Question, AnswerRecord, ReportGenerateResult } from './quiz'
 
 export interface UserProfile {
-  user_id: string
+  id: number
   nickname: string
   avatar_url: string
   total_xp: number
-  created_at: string
+  created_at?: string
+  updated_at?: string
 }
 
 export interface ProfileStats {
@@ -57,8 +58,17 @@ export interface QuizDetailResponse {
   quiz_id: string
   title: string
   created_at: string
+  summary?: string
+  user_input?: string
   questions: Question[]
   answer_records: AnswerRecord[]
+  answer_summary?: {
+    total_questions: number
+    correct_count: number
+    accuracy: number
+    total_xp: number
+    created_at?: string
+  } | null
   accuracy: number
   correct_count: number
   total_questions: number

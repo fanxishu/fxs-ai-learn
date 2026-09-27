@@ -5,6 +5,7 @@ import classnames from 'classnames'
 import styles from './index.module.scss'
 import { AppButton } from '@/components'
 import { useQuizStore } from '@/store/quiz'
+import { useUserStore } from '@/store/user'
 import { API, toastError } from '@/services/api'
 import { DEFAULT_QUESTION_COUNT } from '@/types/quiz'
 
@@ -39,6 +40,11 @@ export default function LoadingPage() {
   const useExisting = useMemo(() => !!quiz && quiz.questions.length > 0, [quiz])
 
   useEffect(() => {
+    if (!useUserStore.getState().isLoggedIn && !useExisting) {
+      try { Taro.showToast({ title: '请先登录后再使用本功能', icon: 'none', duration: 1800 }) } catch (_) { /* noop */ }
+      try { Taro.redirectTo({ url: '/pages/index/index' }) } catch (_) { /* noop */ }
+      return
+    }
     if (!input && !useExisting) {
       console.warn('[Loading] 无 input 也无 quiz，回首页')
       Taro.redirectTo({ url: '/pages/index/index' })
@@ -58,6 +64,13 @@ export default function LoadingPage() {
       setActiveIndex(idx)
     }, 650)
     const run = async () => {
+      const userState = useUserStore.getState()
+      if (!userState.isLoggedIn) {
+        const ok = await userState.wxLoginFlow()
+        if (!ok) {
+          throw new Error('微信登录失败，请稍后重试')
+        }
+      }
       try {
         const res = await API.generateQuiz({
           user_input: input,
@@ -91,6 +104,14 @@ export default function LoadingPage() {
       toastError('请先在首页输入学习内容')
       Taro.redirectTo({ url: '/pages/index/index' })
       return
+    }
+    const userState = useUserStore.getState()
+    if (!userState.isLoggedIn) {
+      const ok = await userState.wxLoginFlow()
+      if (!ok) {
+        toastError('微信登录失败，请稍后重试')
+        return
+      }
     }
     setErrorMsg('')
     setRunning(true)

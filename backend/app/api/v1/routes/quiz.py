@@ -6,7 +6,7 @@ from pydantic import ValidationError
 
 from app.core.auth import get_current_user_id_optional
 from app.core.config import settings
-from app.core.exceptions import SensitiveContentError, ValidationError as AppValidationError
+from app.core.exceptions import ErrorCode, NotLoggedInError, SensitiveContentError, ValidationError as AppValidationError
 from app.models.common import ApiResponse, error_response, ok_response
 from app.models.quiz import QuizGenerateRequest
 from app.repositories import QuizSessionRepository
@@ -28,6 +28,7 @@ async def _persist_quiz_if_logged_in(
     questions_dump,
 ) -> None:
     if not user_id:
+        _log.info("Persist quiz skipped (anonymous) quiz_id=%s", quiz_id)
         return
     try:
         await QuizSessionRepository.create(
@@ -38,8 +39,13 @@ async def _persist_quiz_if_logged_in(
             user_input=user_input,
             questions_json=questions_dump,
         )
+        _log.info("Persist quiz OK quiz_id=%s user_id=%s", quiz_id, user_id)
     except Exception as exc:  # noqa: BLE001
-        _log.warning("Persist quiz failed (non-fatal) quiz_id=%s err=%s", quiz_id, exc)
+        import traceback as _tb
+        _log.error(
+            "Persist quiz FAILED (non-fatal) quiz_id=%s user_id=%s err=%s\nTB:\n%s",
+            quiz_id, user_id, exc, _tb.format_exc(),
+        )
 
 
 @router.post("/generate")
@@ -47,6 +53,11 @@ async def generate_quiz(
     request: Request,
     user_id: int | None = Depends(get_current_user_id_optional),
 ) -> ApiResponse:
+    if not user_id:
+        return error_response(
+            int(ErrorCode.NOT_LOGGED_IN),
+            NotLoggedInError.message,
+        )
     try:
         raw = await request.json()
     except Exception:

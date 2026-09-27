@@ -5,6 +5,7 @@ import {
   clearAuthToken,
   setAuthToken as writeTokenStorage,
   getAuthToken as readTokenStorage,
+  AUTH_TOKEN_KEY,
   toastError,
 } from '@/services/api'
 import type {
@@ -49,6 +50,7 @@ export const useUserStore = create<UserStoreState>((set, get) => ({
       clearAuthToken()
       set({ isLoggedIn: false })
     }
+    console.info('[UserStore] setToken token_len=', t?.length || 0, 'isLoggedIn=', !!t, 'storage=', (() => { try { return !!(Taro.getStorageSync(AUTH_TOKEN_KEY)) } catch { return false } })())
   },
   setUser: (u) => set({ user: u }),
   setStats: (s) => set({ stats: s }),
@@ -81,6 +83,7 @@ export const useUserStore = create<UserStoreState>((set, get) => ({
       set({ token: payload.token, user: payload.user, isLoggedIn: true })
       writeTokenStorage(payload.token)
       set({ loading: false })
+      console.info('[UserStore] wxLoginFlow SUCCESS token_len=', payload.token?.length || 0, 'payload_keys=', payload ? Object.keys(payload) : null, 'storage=', (() => { try { return !!(Taro.getStorageSync(AUTH_TOKEN_KEY)) } catch { return false } })())
       return true
     } catch (err) {
       console.error('[UserStore] wxLoginFlow error:', err)

@@ -14,6 +14,7 @@ from app.models.user import (
     UserInfoSchema,
     UserLoginResponse,
     UserProfileResponse,
+    ProfileStats,
     QuizDetailResponse,
     QuizHistoryItem,
     QuizHistoryListResponse,
@@ -100,26 +101,30 @@ async def login_or_register_by_code(code: str) -> UserLoginResponse:
 
 async def get_full_profile(user_id: int) -> UserProfileResponse:
     user = await UserRepository.get_by_id(int(user_id))
-    stats = await UserRepository.get_profile_stats(int(user_id))
+    stats_row = await UserRepository.get_profile_stats(int(user_id))
     if not user:
-        return UserProfileResponse(
+        user_info = UserInfoSchema(
             id=int(user_id),
             nickname="学习者",
             avatar_url="",
             total_xp=0,
-            quiz_count=0,
-            correct_count=0,
-            average_accuracy=0,
         )
-    return UserProfileResponse(
-        id=int(user["id"]),
-        nickname=user["nickname"],
-        avatar_url=user["avatar_url"] or "",
-        total_xp=int(user["total_xp"]),
-        quiz_count=int(stats["quiz_count"]),
-        correct_count=int(stats["correct_count"]),
-        average_accuracy=int(stats["average_accuracy"]),
+    else:
+        user_info = UserInfoSchema(
+            id=int(user["id"]),
+            nickname=user["nickname"],
+            avatar_url=user.get("avatar_url") or "",
+            total_xp=int(user["total_xp"]),
+            created_at=user.get("created_at"),
+            updated_at=user.get("updated_at"),
+        )
+    stats = ProfileStats(
+        quiz_count=int(stats_row.get("quiz_count") or 0),
+        correct_count=int(stats_row.get("correct_count") or 0),
+        total_questions=int(stats_row.get("total_questions_sum") or stats_row.get("total_questions") or 0),
+        average_accuracy=int(stats_row.get("average_accuracy") or 0),
     )
+    return UserProfileResponse(user=user_info, stats=stats)
 
 
 async def update_profile(
@@ -149,16 +154,37 @@ async def list_user_quizzes(
     page: int = 1,
     page_size: int = 10,
 ) -> QuizHistoryListResponse:
-    items, total = await QuizSessionRepository.list_by_user(
+    items_raw, total = await QuizSessionRepository.list_by_user(
         user_id=int(user_id),
         page=page,
         page_size=page_size,
     )
+    p = max(1, int(page))
+    ps = max(1, min(100, int(page_size)))
+    items: list[QuizHistoryItem] = []
+    for raw in items_raw:
+        quiz_id = raw.get("quiz_id")
+        title = raw.get("title") or ""
+        question_count = int(raw.get("question_count") or 0)
+        correct_count = int(raw.get("correct_count") or 0)
+        accuracy = int(raw.get("accuracy") or 0)
+        total_xp = int(raw.get("total_xp") or raw.get("xp") or 0)
+        created_at = raw.get("created_at")
+        items.append(QuizHistoryItem(
+            quiz_id=quiz_id,
+            title=title,
+            question_count=question_count,
+            correct_count=correct_count,
+            accuracy=accuracy,
+            total_xp=total_xp,
+            created_at=created_at,
+        ))
     return QuizHistoryListResponse(
-        items=[QuizHistoryItem(**x) for x in items],
+        items=items,
         total=int(total),
-        page=max(1, int(page)),
-        page_size=max(1, min(100, int(page_size))),
+        page=p,
+        page_size=ps,
+        has_more=bool(total > p * ps),
     )
 
 
@@ -168,14 +194,19 @@ async def get_user_quiz_detail(user_id: int, quiz_id: str) -> QuizDetailResponse
         raise QuizNotFoundError()
     r = await AnswerRecordRepository.get_by_quiz_id_for_user(quiz_id=quiz_id, user_id=int(user_id))
     rp = await ReportRepository.get_by_quiz_id_for_user(quiz_id=quiz_id, user_id=int(user_id))
+    total_questions = r["total_questions"] if r else int(q.get("question_count") or 0)
+    correct_count = r["correct_count"] if r else 0
+    accuracy = r["accuracy"] if r else (rp.get("accuracy") if rp else 0)
+    total_xp = rp.get("total_xp") if rp else 0
     answer_summary: Optional[dict] = None
     records: Optional[list] = None
     if r:
         records = r.get("records")
         answer_summary = {
-            "total_questions": r["total_questions"],
-            "correct_count": r["correct_count"],
-            "accuracy": r["accuracy"],
+            "total_questions": int(total_questions),
+            "correct_count": int(correct_count),
+            "accuracy": int(accuracy),
+            "total_xp": int(total_xp),
             "created_at": r.get("created_at"),
         }
     return QuizDetailResponse(
@@ -187,5 +218,9 @@ async def get_user_quiz_detail(user_id: int, quiz_id: str) -> QuizDetailResponse
         questions=q.get("questions"),
         answer_records=records,
         answer_summary=answer_summary,
+        total_questions=int(total_questions),
+        correct_count=int(correct_count),
+        accuracy=int(accuracy),
+        total_xp=int(total_xp),
         report=rp.get("report") if rp else None,
     )

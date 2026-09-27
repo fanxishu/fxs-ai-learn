@@ -18,6 +18,8 @@ class UserInfoSchema(BaseSchema):
     nickname: str = "学习者"
     avatar_url: str = ""
     total_xp: int = 0
+    created_at: Optional[str] = None
+    updated_at: Optional[str] = None
 
 
 class UserLoginResponse(BaseSchema):
@@ -26,12 +28,14 @@ class UserLoginResponse(BaseSchema):
 
 
 class UserProfileResponse(BaseSchema):
-    id: int
-    nickname: str = "学习者"
-    avatar_url: str = ""
-    total_xp: int = 0
+    user: UserInfoSchema
+    stats: "ProfileStats"
+
+
+class ProfileStats(BaseSchema):
     quiz_count: int = 0
     correct_count: int = 0
+    total_questions: int = 0
     average_accuracy: int = 0
 
 
@@ -45,6 +49,8 @@ class QuizHistoryItem(BaseSchema):
     title: str = ""
     accuracy: int = 0
     question_count: int = 0
+    correct_count: int = 0
+    total_xp: int = 0
     created_at: Optional[str] = None
 
 
@@ -53,6 +59,7 @@ class QuizHistoryListResponse(BaseSchema):
     total: int = 0
     page: int = 1
     page_size: int = 10
+    has_more: bool = False
 
 
 class QuizDetailResponse(BaseSchema):
@@ -64,4 +71,8 @@ class QuizDetailResponse(BaseSchema):
     questions: Optional[list] = None
     answer_records: Optional[list] = None
     answer_summary: Optional[dict] = None
+    total_questions: int = 0
+    correct_count: int = 0
+    accuracy: int = 0
+    total_xp: int = 0
     report: Optional[dict] = None

@@ -14,7 +14,7 @@ import { useQuizStore } from '@/store/quiz'
 import { useUserStore } from '@/store/user'
 import { API, toastError } from '@/services/api'
 import { validateAndToast } from '@/services/contentFilter'
-import type { HistoryItem } from '@/types/quiz'
+import type { HistoryItem, Question } from '@/types/quiz'
 import type { QuizHistoryItem as UserQuizHistoryItem } from '@/types/user'
 import {
   DEFAULT_QUESTION_COUNT,
@@ -49,9 +49,11 @@ export default function HomePage() {
   const [loading, setLoading] = React.useState(false)
   const [userRecent, setUserRecent] = useState<UserQuizHistoryItem[] | null>(null)
 
-  useDidShow(() => {
+  useDidShow(async () => {
     loadHistory()
-    if (isLoggedIn) {
+    const wxLoginFlow = useUserStore.getState().wxLoginFlow
+    if (!useUserStore.getState().isLoggedIn) await wxLoginFlow()
+    if (useUserStore.getState().isLoggedIn) {
       API.listQuizzes(1, 3).then(res => {
         if (res.code === 0 && res.data) setUserRecent(res.data.items || [])
       }).catch(() => { /* fallback to local history */ })
@@ -62,12 +64,16 @@ export default function HomePage() {
 
   useEffect(() => {
     loadHistory()
-    if (isLoggedIn) {
-      API.listQuizzes(1, 3).then(res => {
+    const run = async () => {
+      const state = useUserStore.getState()
+      if (!state.isLoggedIn) await state.wxLoginFlow()
+      if (useUserStore.getState().isLoggedIn) {
+        const res = await API.listQuizzes(1, 3)
         if (res.code === 0 && res.data) setUserRecent(res.data.items || [])
-      }).catch(() => {})
+      }
     }
-  }, [loadHistory, isLoggedIn])
+    run().catch(err => console.warn('[HomePage] mount refresh err:', err))
+  }, [loadHistory])
 
   const recent = useMemo(() => {
     if (userRecent && userRecent.length) {
@@ -77,10 +83,12 @@ export default function HomePage() {
         correct: x.correct_count,
         total: x.question_count,
         accuracy: x.accuracy,
+        total_xp: x.total_xp,
         created_at: x.created_at,
-      })) as unknown as HistoryItem[]
+        _fromUser: true,
+      })) as unknown as (HistoryItem & { _fromUser?: boolean; total_xp?: number })[]
     }
-    return (history || []).slice(0, 3)
+    return (history || []).slice(0, 3) as (HistoryItem & { _fromUser?: boolean; total_xp?: number })[]
   }, [userRecent, history])
 
   const canSubmit = input.trim().length >= INPUT_MIN_LEN && input.trim().length <= INPUT_MAX_LEN
@@ -92,7 +100,39 @@ export default function HomePage() {
   const accuracyClass = (acc: number) =>
     acc >= 80 ? styles.high : acc >= 60 ? styles.mid : styles.low
 
-  const openHistoryItem = (item: HistoryItem) => {
+  const openHistoryItem = useCallback(async (item: HistoryItem & { _fromUser?: boolean }) => {
+    if ((item as any)._fromUser) {
+      Taro.showLoading({ title: '加载中...', mask: true })
+      try {
+        const res = await API.getQuizDetail(item.id)
+        if (res.code !== 0 || !res.data) {
+          toastError(res.message || '加载失败，请重试')
+          return
+        }
+        const detail = res.data
+        const fakeQuiz = {
+          quiz_id: detail.quiz_id,
+          title: detail.title,
+          questions: (detail.questions || []) as Question[],
+        }
+        setQuiz(fakeQuiz as any)
+        saveQuizSession({ quiz: fakeQuiz as any })
+        useQuizStore.getState().setRecords((detail.answer_records || []) as any[])
+        useQuizStore.getState().setReport((detail.report as any) || null)
+        useQuizStore.getState().saveReportPayload({
+          quiz: { questions: (detail.questions || []) as Question[] },
+          answer_records: (detail.answer_records || []) as any[],
+          report: (detail.report as any) || null,
+        })
+        Taro.navigateTo({ url: '/pages/report/index' })
+      } catch (err) {
+        console.error('[HomePage] openHistoryItem user err:', err)
+        toastError('加载失败，请稍后重试')
+      } finally {
+        Taro.hideLoading()
+      }
+      return
+    }
     if (!item.quiz_snapshot) return
     reset()
     setQuiz(item.quiz_snapshot.quiz)
@@ -101,10 +141,9 @@ export default function HomePage() {
     useQuizStore.getState().setRecords(snap.answer_records)
     useQuizStore.getState().setReport(snap.report)
     Taro.navigateTo({ url: '/pages/report/index' })
-  }
+  }, [reset, setQuiz, saveQuizSession])
 
   const onSubmit = useCallback(async () => {
-    // Task7 第一层：前端 contentFilter 快速拦截
     if (!validateAndToast(input)) return
     const text = input.trim()
     if (text.length < INPUT_MIN_LEN) {
@@ -114,6 +153,14 @@ export default function HomePage() {
     if (text.length > INPUT_MAX_LEN) {
       toastError(`不能超过 ${INPUT_MAX_LEN} 个字`)
       return
+    }
+    const userState = useUserStore.getState()
+    if (!userState.isLoggedIn) {
+      const ok = await userState.wxLoginFlow()
+      if (!ok) {
+        toastError('微信登录失败，请稍后重试')
+        return
+      }
     }
     setLoading(true)
     try {
@@ -211,9 +258,14 @@ export default function HomePage() {
             <View key={item.id} className={styles.card} onClick={() => openHistoryItem(item)}>
               <View className={styles.rowTop}>
                 <Text className={styles.title}>{item.title}</Text>
-                <StateBadge kind={item.accuracy >= 60 ? 'good' : 'bad'}>
-                  正确率 {item.accuracy}%
-                </StateBadge>
+                <View className={styles.rightBadges}>
+                  {(item as any).total_xp ? (
+                    <CoinBadge size='sm' variant='soft'>+XP {(item as any).total_xp}</CoinBadge>
+                  ) : null}
+                  <StateBadge kind={item.accuracy >= 60 ? 'good' : 'bad'}>
+                    正确率 {item.accuracy}%
+                  </StateBadge>
+                </View>
               </View>
               <View className={styles.sub}>
                 <Text className={classnames(styles.score, accuracyClass(item.accuracy))}>

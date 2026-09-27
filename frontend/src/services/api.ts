@@ -6,7 +6,6 @@ import type {
   ReportGenerateRequest,
   ReportGenerateResult,
 } from '@/types/quiz'
-import { mockQuiz, mockReport } from '@/data/quizMock'
 import { ErrorCode, ERROR_TOAST } from '@/types/common'
 import type {
   UserLoginResponse,
@@ -15,6 +14,7 @@ import type {
   QuizHistoryListResponse,
   QuizDetailResponse,
 } from '@/types/user'
+import { useUserStore } from '@/store/user'
 
 const getEnv = (key: string, fallback: string = ''): string => {
   try {
@@ -28,10 +28,18 @@ const getEnv = (key: string, fallback: string = ''): string => {
 const BASE_URL = getEnv('TARO_APP_API_BASE', 'http://127.0.0.1:8000')
 const API_PREFIX = '/api/v1'
 
-const AUTH_TOKEN_KEY = 'auth_token'
+export const AUTH_TOKEN_KEY = 'auth_token'
 
 export const getAuthToken = (): string => {
-  try { return Taro.getStorageSync(AUTH_TOKEN_KEY) as string || '' } catch (_) { return '' }
+  try {
+    const fromStorage = Taro.getStorageSync(AUTH_TOKEN_KEY) as string || ''
+    if (fromStorage) return fromStorage
+  } catch (_) { /* noop */ }
+  try {
+    const fromStore = useUserStore.getState().token
+    if (fromStore) return fromStore
+  } catch (_) { /* noop */ }
+  return ''
 }
 
 export const setAuthToken = (token: string): void => {
@@ -43,15 +51,27 @@ export const clearAuthToken = (): void => {
 }
 
 let _tokenClearedToast = false
+let _redirecting = false
 const dispatchUnauthCleanup = (code: number) => {
-  if (code !== ErrorCode.UNAUTHORIZED && code !== ErrorCode.TOKEN_EXPIRED) return
-  clearAuthToken()
+  if (
+    code !== ErrorCode.UNAUTHORIZED
+    && code !== ErrorCode.TOKEN_EXPIRED
+    && code !== ErrorCode.NOT_LOGGED_IN
+  ) return
+  try { useUserStore.getState().clearAuth() } catch (_) { /* noop */ }
   if (!_tokenClearedToast) {
     _tokenClearedToast = true
     try {
       Taro.showToast({ title: ERROR_TOAST[code] || '请重新登录', icon: 'none', duration: 1800 })
     } catch (_) { /* noop */ }
     setTimeout(() => { _tokenClearedToast = false }, 2000)
+  }
+  if (!_redirecting) {
+    _redirecting = true
+    try {
+      Taro.redirectTo({ url: '/pages/index/index' })
+    } catch (_) { /* noop */ }
+    setTimeout(() => { _redirecting = false }, 1200)
   }
 }
 
@@ -78,11 +98,12 @@ export async function request<T = unknown>(
   method: 'GET' | 'POST' | 'PUT' = 'POST',
 ): Promise<ApiResponse<T>> {
   const url = `${BASE_URL}${API_PREFIX}${path}`
-  console.log(`[API] ${method} ${url}`, data)
-
+  const fromStorage = (() => { try { return Taro.getStorageSync(AUTH_TOKEN_KEY) as string || '' } catch (_) { return '' } })()
+  const fromStore = (() => { try { return useUserStore.getState().token || '' } catch (_) { return '' } })()
   const token = getAuthToken()
   const header: Record<string, string> = { 'Content-Type': 'application/json' }
   if (token) header['Authorization'] = `Bearer ${token}`
+  console.log(`[API] ${method} ${url} token_in_headers=${!!token} len=${token.length}| storage_len=${fromStorage.length} store_len=${fromStore.length} | header_keys=${JSON.stringify(Object.keys(header))}`, data)
 
   try {
     const res = await Taro.request<ApiResponse<T>>({
@@ -129,8 +150,8 @@ export const API = {
     if (res.code === 0 && res.data) return res
     const toast = codeToToast(res.code, res.message || '生成失败，请重试')
     if (toast) toastError(toast)
-    console.warn('[API] generateQuiz 失败（code=' + res.code + '），使用 mock 数据')
-    return { code: 0, message: 'ok', data: mockQuiz(payload) }
+    console.error('[API] generateQuiz 失败 code=', res.code, 'msg=', res.message)
+    return res
   },
 
   async generateReport(
@@ -140,8 +161,8 @@ export const API = {
     if (res.code === 0 && res.data) return res
     const toast = codeToToast(res.code, res.message || '生成报告失败，请重试')
     if (toast) toastError(toast)
-    console.warn('[API] generateReport 失败（code=' + res.code + '），使用 mock 数据')
-    return { code: 0, message: 'ok', data: mockReport(payload) }
+    console.error('[API] generateReport 失败 code=', res.code, 'msg=', res.message)
+    return res
   },
 
   async loginWx(code: string): Promise<ApiResponse<UserLoginResponse>> {

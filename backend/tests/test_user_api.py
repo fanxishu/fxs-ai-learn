@@ -55,8 +55,9 @@ async def test_profile_with_token_ok(client, db_pool_cur):
     body = resp.json()
     assert body["code"] == 0, body
     d = body["data"]
-    assert d["nickname"] == "同学" and d["total_xp"] == 30
-    assert d["quiz_count"] == 2 and d["correct_count"] == 7 and d["average_accuracy"] == 70
+    assert d["user"]["nickname"] == "同学" and d["user"]["total_xp"] == 30
+    assert d["stats"]["quiz_count"] == 2 and d["stats"]["correct_count"] == 7 and d["stats"]["average_accuracy"] == 70
+    assert d["stats"]["total_questions"] == 10
 
 
 @pytest.mark.asyncio

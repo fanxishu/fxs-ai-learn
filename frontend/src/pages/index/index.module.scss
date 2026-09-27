@@ -141,6 +141,13 @@
       gap: $spacing-sm;
     }
 
+    .rightBadges {
+      display: flex;
+      align-items: center;
+      gap: $spacing-xs;
+      flex-shrink: 0;
+    }
+
     .title {
       font-size: $font-size-md;
       font-weight: $font-weight-semibold;
