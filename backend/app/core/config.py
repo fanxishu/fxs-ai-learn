@@ -1,4 +1,5 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pathlib import Path
 from typing import Optional
 
 
@@ -7,7 +8,7 @@ class Settings(BaseSettings):
         env_file=".env", env_file_encoding="utf-8", extra="ignore"
     )
 
-    PROJECT_NAME: str = "鱼皮 AI 闯关学习小程序"
+    PROJECT_NAME: str = "智能 AI 闯关学习小程序"
     API_V1_PREFIX: str = "/api/v1"
     BACKEND_CORS_ORIGINS: str = "*"
     VERSION: str = "1.0.0"
@@ -45,6 +46,8 @@ class Settings(BaseSettings):
     WECHAT_APPSECRET: Optional[str] = None
 
     USE_MOCK_WX_LOGIN: bool = True
+
+    AVATAR_UPLOAD_DIR: Path = Path(__file__).resolve().parents[2] / "uploads" / "avatars"
 
     @property
     def database_url(self) -> str:

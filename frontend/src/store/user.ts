@@ -31,7 +31,7 @@ export interface UserStoreState {
   wxLoginFlow: () => Promise<boolean>
   refreshProfile: () => Promise<boolean>
   updateNickname: (nickname: string) => Promise<boolean>
-  updateAvatar: (avatar_url: string) => Promise<boolean>
+  updateAvatar: (filePath: string) => Promise<boolean>
 }
 
 export const useUserStore = create<UserStoreState>((set, get) => ({
@@ -95,6 +95,8 @@ export const useUserStore = create<UserStoreState>((set, get) => ({
 
   refreshProfile: async () => {
     if (!get().isLoggedIn && !readTokenStorage()) return false
+    const requestToken = readTokenStorage()
+    const previousAvatar = get().user?.avatar_url
     try {
       set({ loading: true })
       const res = await API.getProfile()
@@ -103,7 +105,13 @@ export const useUserStore = create<UserStoreState>((set, get) => ({
         return false
       }
       const data = res.data as UserProfileResponse
-      set({ user: data.user, stats: data.stats })
+      if (readTokenStorage() !== requestToken) return false
+      const currentUser = get().user
+      // A refresh started before an upload must not overwrite the newly saved avatar.
+      const nextUser = currentUser?.id === data.user.id && currentUser.avatar_url !== previousAvatar
+        ? { ...data.user, avatar_url: currentUser.avatar_url }
+        : data.user
+      set({ user: nextUser, stats: data.stats })
       return true
     } catch (err) {
       console.error('[UserStore] refreshProfile error:', err)
@@ -138,20 +146,29 @@ export const useUserStore = create<UserStoreState>((set, get) => ({
     }
   },
 
-  updateAvatar: async (avatar_url: string) => {
-    if (!avatar_url) return false
+  updateAvatar: async (filePath: string) => {
+    if (!filePath) return false
+    const { token, user, isLoggedIn } = get()
+    if (!isLoggedIn || !user) {
+      toastError('请先登录后再修改头像')
+      return false
+    }
     try {
       set({ loading: true })
-      const res = await API.updateProfile({ avatar_url })
+      const res = await API.uploadAvatar(filePath)
+      if (get().token !== token || get().user?.id !== user.id) return false
       if (res.code !== 0 || !res.data) {
-        if (res.message) toastError(res.message)
+        toastError(res.message || '头像上传失败，请重试')
         return false
       }
-      const data = res.data as UserProfileResponse
-      set({ user: data.user, stats: data.stats })
+      const avatarUrl = res.data.avatar_url
+      set(state => ({
+        user: state.user ? { ...state.user, avatar_url: avatarUrl } : null,
+      }))
       return true
     } catch (err) {
       console.error('[UserStore] updateAvatar error:', err)
+      toastError('头像上传失败，请重试')
       return false
     } finally {
       set({ loading: false })

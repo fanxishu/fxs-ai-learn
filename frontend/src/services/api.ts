@@ -28,6 +28,14 @@ const getEnv = (key: string, fallback: string = ''): string => {
 const BASE_URL = getEnv('TARO_APP_API_BASE', 'http://127.0.0.1:8000')
 const API_PREFIX = '/api/v1'
 
+export const getAvatarUrl = (path: string = ''): string => {
+  if (/^https?:\/\//i.test(path)) return path
+  if (path.startsWith(`${API_PREFIX}/user/avatars/`)) {
+    return `${BASE_URL.replace(/\/$/, '')}${path}`
+  }
+  return ''
+}
+
 export const AUTH_TOKEN_KEY = 'auth_token'
 
 export const getAuthToken = (): string => {
@@ -175,6 +183,39 @@ export const API = {
 
   async updateProfile(payload: UpdateProfileRequest): Promise<ApiResponse<UserProfileResponse>> {
     return request<UserProfileResponse>('/user/profile', payload, 'PUT')
+  },
+
+  async uploadAvatar(filePath: string): Promise<ApiResponse<{ avatar_url: string }>> {
+    const token = getAuthToken()
+    if (!token) {
+      dispatchUnauthCleanup(ErrorCode.NOT_LOGGED_IN)
+      return { code: ErrorCode.NOT_LOGGED_IN, message: '请先登录后再修改头像' }
+    }
+    try {
+      const res = await Taro.uploadFile({
+        url: `${BASE_URL}${API_PREFIX}/user/avatar`,
+        filePath,
+        name: 'file',
+        // Let uploadFile generate the multipart boundary.
+        header: { Authorization: `Bearer ${token}` },
+        timeout: 30000,
+      })
+      if (res.statusCode !== 200) {
+        return {
+          code: ErrorCode.INTERNAL_SERVER_ERROR,
+          message: res.statusCode === 413 ? '头像不能超过 2MB' : '头像上传失败，请稍后重试',
+        }
+      }
+      const body = JSON.parse(res.data) as ApiResponse<{ avatar_url: string }>
+      if (!body || typeof body.code !== 'number'
+        || (body.code === 0 && !body.data?.avatar_url)) {
+        return { code: ErrorCode.INTERNAL_SERVER_ERROR, message: '头像上传返回格式异常' }
+      }
+      dispatchUnauthCleanup(body.code)
+      return body
+    } catch (_) {
+      return { code: ErrorCode.INTERNAL_SERVER_ERROR, message: '头像上传失败，请检查网络后重试' }
+    }
   },
 
   async listQuizzes(page = 1, page_size = 20): Promise<ApiResponse<QuizHistoryListResponse>> {

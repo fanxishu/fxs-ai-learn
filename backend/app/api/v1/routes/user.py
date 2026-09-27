@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, File, Query, UploadFile
+from fastapi.responses import FileResponse
 
 from app.core.auth import get_current_user_id_required
+from app.core.exceptions import FishAIException, ParamInvalidError
 from app.models.common import ok_response
 from app.models.user import (
     QuizHistoryListResponse,
@@ -13,6 +15,7 @@ from app.models.user import (
     WxLoginRequest,
 )
 from app.services import user_service as svc
+from app.services import avatar_service
 
 router = APIRouter(prefix="/user", tags=["User"])
 
@@ -40,6 +43,36 @@ async def update_profile(
         avatar_url=payload.avatar_url,
     )
     return ok_response(data=data.model_dump())
+
+
+@router.post("/avatar", response_model_exclude_none=True)
+async def upload_avatar(
+    user_id: int = Depends(get_current_user_id_required),
+    file: UploadFile = File(...),
+):
+    try:
+        if file.size is not None and file.size > avatar_service.MAX_AVATAR_BYTES:
+            raise ParamInvalidError(message="头像不能超过 2MB")
+        content = await file.read(avatar_service.MAX_AVATAR_BYTES + 1)
+    finally:
+        await file.close()
+    avatar_url = await avatar_service.save_avatar(user_id, content)
+    return ok_response(data={"avatar_url": avatar_url})
+
+
+@router.get("/avatars/{filename}")
+async def get_avatar(filename: str):
+    path = avatar_service.get_avatar_path(filename)
+    if path is None or not path.is_file():
+        raise FishAIException(code=4001, message="头像不存在")
+    return FileResponse(
+        path,
+        media_type="image/png",
+        headers={
+            "Cache-Control": "public, max-age=31536000, immutable",
+            "X-Content-Type-Options": "nosniff",
+        },
+    )
 
 
 @router.get("/quizzes", response_model_exclude_none=True)

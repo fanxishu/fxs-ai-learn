@@ -1,4 +1,4 @@
-# 鱼皮 AI 闯关学习小程序 MVP - Product Requirements Document (spec.md)
+# 智能 AI 闯关学习小程序 MVP - Product Requirements Document (spec.md)
 
 ## Overview
 - **Summary**: 一个微信生态内的 AI 学习闯关小程序 MVP：用户输入一句话/一段知识点 → 后端调用 DeepSeek AI 自动生成 3~5 道单选+多选+判断闯关题（附深度讲解）→ 用户逐题即时答题对错反馈 + 知识讲解 → 通关后 AI 生成本次学习正确率、掌握薄弱点、三句总结与分享金句的复盘报告，形成"输入→出题→答题→报告"的极简学习闭环。

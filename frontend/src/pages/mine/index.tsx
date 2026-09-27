@@ -1,12 +1,12 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { View, Text, Input } from '@tarojs/components'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { View, Text, Input, Button, Image } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import classnames from 'classnames'
 import styles from './index.module.scss'
 import { AppButton, StateBadge } from '@/components'
 import { useQuizStore } from '@/store/quiz'
 import { useUserStore } from '@/store/user'
-import { API, toastError } from '@/services/api'
+import { API, getAvatarUrl, toastError } from '@/services/api'
 import { validateNickname } from '@/services/contentFilter'
 import type { QuizHistoryItem as UserQuizHistoryItem } from '@/types/user'
 import type { Question, AnswerRecord, QuizGenerateResult, ReportGenerateResult } from '@/types/quiz'
@@ -17,6 +17,7 @@ export default function MinePage() {
   const stats = useUserStore(s => s.stats)
   const refreshProfile = useUserStore(s => s.refreshProfile)
   const updateNickname = useUserStore(s => s.updateNickname)
+  const updateAvatar = useUserStore(s => s.updateAvatar)
   const loading = useUserStore(s => s.loading)
 
   const quizStoreHistory = useQuizStore(s => s.history)
@@ -29,6 +30,12 @@ export default function MinePage() {
   const [historyLoading, setHistoryLoading] = useState(false)
   const [nickModalOpen, setNickModalOpen] = useState(false)
   const [nickInput, setNickInput] = useState('')
+  const [nickInputFocused, setNickInputFocused] = useState(false)
+  const [avatarUploading, setAvatarUploading] = useState(false)
+  const [failedAvatarUrl, setFailedAvatarUrl] = useState('')
+  const avatarUploadPending = useRef(false)
+  const avatarUrl = getAvatarUrl(user?.avatar_url)
+  const isWeapp = process.env.TARO_ENV === 'weapp'
 
   useDidShow(async () => {
     loadHistory()
@@ -110,7 +117,43 @@ export default function MinePage() {
 
   const openEditNickname = () => {
     setNickInput(user?.nickname || '')
+    setNickInputFocused(false)
     setNickModalOpen(true)
+  }
+
+  const saveAvatar = async (filePath: string) => {
+    if (!filePath || avatarUploadPending.current) return
+    avatarUploadPending.current = true
+    setAvatarUploading(true)
+    try {
+      const ok = await updateAvatar(filePath)
+      if (ok) {
+        setFailedAvatarUrl('')
+        Taro.showToast({ title: '头像已更新', icon: 'success' })
+      }
+    } finally {
+      avatarUploadPending.current = false
+      setAvatarUploading(false)
+    }
+  }
+
+  const chooseAvatar = async () => {
+    if (!useUserStore.getState().isLoggedIn) {
+      toastError('请先登录后再修改头像')
+      return
+    }
+    if (isWeapp || avatarUploadPending.current) return
+    try {
+      const result = await Taro.chooseImage({
+        count: 1,
+        sizeType: ['compressed'],
+        sourceType: ['album', 'camera'],
+      })
+      if (result.tempFilePaths[0]) await saveAvatar(result.tempFilePaths[0])
+    } catch (err) {
+      const message = (err as { errMsg?: string })?.errMsg || ''
+      if (!/cancel/i.test(message)) toastError('无法选择头像，请检查相册权限后重试')
+    }
   }
 
   const saveNickname = async () => {
@@ -180,11 +223,25 @@ export default function MinePage() {
   return (
     <View className={styles.page}>
       <View className={styles.profile}>
-        <View className={styles.avatar}>
-          {user?.avatar_url
-            ? <img className={styles.avatarImg} src={user.avatar_url} alt='avatar' />
+        <Button
+          className={styles.avatar}
+          openType={isWeapp && isLoggedIn ? 'chooseAvatar' : undefined}
+          onChooseAvatar={e => saveAvatar(e.detail.avatarUrl)}
+          onClick={chooseAvatar}
+          disabled={avatarUploading || loading}
+          hoverClass='none'
+          ariaLabel='修改头像'
+        >
+          {avatarUrl && avatarUrl !== failedAvatarUrl
+            ? <Image
+                className={styles.avatarImg}
+                src={avatarUrl}
+                mode='aspectFill'
+                onError={() => setFailedAvatarUrl(avatarUrl)}
+              />
             : <Text>{(user?.nickname || '学').slice(0, 1)}</Text>}
-        </View>
+          {avatarUploading && <Text className={styles.avatarPending}>上传中</Text>}
+        </Button>
         <View className={styles.info}>
           <View className={styles.nameRow} onClick={openEditNickname}>
             <Text className={styles.name}>{user?.nickname || '学习者'}</Text>
@@ -261,19 +318,28 @@ export default function MinePage() {
       {nickModalOpen && (
         <View className={styles.modalMask} onClick={() => setNickModalOpen(false)}>
           <View className={styles.modalCard} onClick={e => e.stopPropagation()}>
-            <Text className={styles.modalTitle}>修改昵称</Text>
-            <Input
-              className={styles.modalInput}
-              placeholder='请输入新昵称（最多 20 字）'
-              value={nickInput}
-              onInput={e => setNickInput(e.detail.value)}
-              maxlength={20}
-            />
+            <View className={styles.modalHeader}>
+              <Text className={styles.modalTitle}>修改昵称</Text>
+              <Text className={styles.modalSubtitle}>取一个你喜欢的名字</Text>
+            </View>
+            <View className={styles.modalField}>
+              <Input
+                className={classnames(styles.modalInput, nickInputFocused && styles.modalInputFocused)}
+                placeholder='请输入昵称'
+                placeholderClass={styles.modalPlaceholder}
+                value={nickInput}
+                onInput={e => setNickInput(e.detail.value)}
+                onFocus={() => setNickInputFocused(true)}
+                onBlur={() => setNickInputFocused(false)}
+                maxlength={20}
+              />
+              <Text className={styles.modalCount}>{nickInput.length}/20</Text>
+            </View>
             <View className={styles.modalActions}>
               <AppButton
                 variant='secondary'
                 size='lg'
-                className={styles.modalBtn}
+                className={classnames(styles.modalBtn, styles.modalCancel)}
                 onClick={() => setNickModalOpen(false)}
               >
                 取消
@@ -281,7 +347,7 @@ export default function MinePage() {
               <AppButton
                 variant='primary'
                 size='lg'
-                className={styles.modalBtn}
+                className={classnames(styles.modalBtn, styles.modalSave)}
                 loading={loading}
                 onClick={saveNickname}
               >

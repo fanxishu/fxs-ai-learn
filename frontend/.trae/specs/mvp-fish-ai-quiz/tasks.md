@@ -1,4 +1,4 @@
-# 《鱼皮 AI 闯关学习小程序》MVP 实现任务清单 (tasks.md)
+# 《智能 AI 闯关学习小程序》MVP 实现任务清单 (tasks.md)
 
 **关联规格**：`spec.md` / 开放问题 OQ-1~OQ-4 待用户确认后才能进入 Implement 阶段。
 
@@ -153,7 +153,7 @@
 - **Priority**: high
 - **父 AC 覆盖**: AC-04
 - **产出文件**: `frontend/src/pages/loading/index.tsx` + `.scss` + `src/api/quizApi.ts`（封装 quiz/generate）
-- **实施步骤**：4 步鱼皮进度（`01 收集中… → 02 整理知识 → 03 生成题目 → 04 准备好啦`），与后端 30s 超时联调
+- **实施步骤**：4 步智能进度（`01 收集中… → 02 整理知识 → 03 生成题目 → 04 准备好啦`），与后端 30s 超时联调
 - **本地测试要求 (TR)**:
   - TR-10.1 (rule): `USE_MOCK_LLM=true` 后端运行时，提交一句「RAG 和传统搜索」5s 内收到 5 题并跳 quiz 页
   - TR-10.2 (rule): 后端返回 5001 时 → loading 页显示「生成失败，返回重试」按钮可回到 home

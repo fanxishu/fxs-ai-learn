@@ -38,11 +38,11 @@ async def test_login_existing_user_returns_profile(_always_mock_mode, db_pool_cu
     cur.execute.reset_mock()
     # SELECT by openid → row
     cur.fetchone.return_value = (
-        7, "mock_old1", "鱼皮同学", "", 42,
+        7, "mock_old1", "智能同学", "", 42,
         datetime(2026, 1, 1), datetime(2026, 2, 1),
     )
     result = await svc.login_or_register_by_code("old1")
-    assert result.user.id == 7 and result.user.nickname == "鱼皮同学" and result.user.total_xp == 42
+    assert result.user.id == 7 and result.user.nickname == "智能同学" and result.user.total_xp == 42
     # no INSERT expected (only get_by_openid SELECT once + close? at least not INSERT)
     insert_calls = [c for c in cur.execute.await_args_list if str(c.args[0]).upper().startswith("INSERT")]
     assert len(insert_calls) == 0, f"should not INSERT for existing user: {insert_calls}"

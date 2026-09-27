@@ -537,7 +537,7 @@ export function mockReport (req: ReportGenerateRequest): ReportGenerateResult {
     ],
     advice:
       '错题是进步的种子：每道错题做 3 件事 → ① 看解析后自己能讲出来；② 把易混点做一张对比表；③ 24h 后重闯这道题。坚持下来，正确率会肉眼可见地上升。',
-    share_quote: `鱼皮 AI 闯关：「${topicName}」我正确率 ${acc}%，学习像闯关一样认真！🐟`,
+    share_quote: `智能 AI 闯关：「${topicName}」我正确率 ${acc}%，学习像闯关一样认真！🐟`,
   }
 }
 

@@ -1,4 +1,4 @@
-# 鱼皮 AI 闯关小程序 - 一键启动开发环境
+# 智能 AI 闯关小程序 - 一键启动开发环境
 # 并行启动：后端 uvicorn 8000 + 前端 pnpm dev:weapp
 # 使用方式：PowerShell 5+  .\scripts\start-dev.ps1
 
@@ -15,7 +15,7 @@ $env:TEMP = $TmpDir
 
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "  鱼皮 AI 闯关小程序 MVP 开发环境启动" -ForegroundColor Cyan
+Write-Host "  智能 AI 闯关小程序 MVP 开发环境启动" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 

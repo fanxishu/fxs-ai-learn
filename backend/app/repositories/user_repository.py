@@ -15,10 +15,13 @@ class UserRepository:
     async def get_by_openid(cls, openid: str) -> Optional[dict]:
         pool = get_pool()
         async with pool.acquire() as conn:
+            # Pooled read connections must not retain repeatable-read snapshots.
+            await conn.rollback()
             async with conn.cursor() as cur:
                 sql = f"SELECT id, openid, nickname, avatar_url, total_xp, created_at, updated_at FROM {cls.TABLE} WHERE openid = %s LIMIT 1"
                 await cur.execute(sql, (openid,))
                 row = await cur.fetchone()
+            await conn.rollback()
         return cls._row_to_dict(row) if row else None
 
     @classmethod
@@ -37,10 +40,12 @@ class UserRepository:
     async def get_by_id(cls, user_id: int) -> Optional[dict]:
         pool = get_pool()
         async with pool.acquire() as conn:
+            await conn.rollback()
             async with conn.cursor() as cur:
                 sql = f"SELECT id, openid, nickname, avatar_url, total_xp, created_at, updated_at FROM {cls.TABLE} WHERE id = %s LIMIT 1"
                 await cur.execute(sql, (user_id,))
                 row = await cur.fetchone()
+            await conn.rollback()
         return cls._row_to_dict(row) if row else None
 
     @classmethod

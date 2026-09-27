@@ -51,6 +51,7 @@ backend/.pytest_cache/
 # 临时目录
 .tmp/
 backend/.tmp/
+backend/uploads/
 frontend/.tmp/
 .npm-cache/
 
@@ -67,4 +68,3 @@ __front-page_orphan_to_delete/
 __*.js
 __*.py
 __*.ts
-

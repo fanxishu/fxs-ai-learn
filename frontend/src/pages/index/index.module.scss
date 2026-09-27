@@ -100,13 +100,9 @@
   gap: $spacing-md;
 }
 
-.footerActions {
-  margin-top: $spacing-md;
-  padding-top: $spacing-lg;
-  padding-bottom: $spacing-md;
+.startActions {
   display: flex;
   flex-direction: column;
-  gap: $spacing-sm;
 
   .primaryButton {
     box-shadow: $color-primary-shadow;
@@ -185,8 +181,29 @@
   }
 }
 
-.breadcrumbs {
+.frequentTopics {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.frequentTitle {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  font-weight: $font-weight-semibold;
+}
+
+.frequentHint {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.topicTags {
   display: flex;
   flex-wrap: wrap;
   gap: $spacing-sm;
+}
+
+.topicTag {
+  max-width: 100%;
 }

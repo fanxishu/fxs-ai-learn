@@ -195,7 +195,7 @@ class TestReportGenerateResultContract:
                 "建议 24 小时后重闯。",
             ],
             "advice": "间隔重复 + 错题本。",
-            "share_quote": "鱼皮 AI 闯关，正确率 80%，继续冲！",
+            "share_quote": "智能 AI 闯关，正确率 80%，继续冲！",
         }
         base.update(overrides)
         return base

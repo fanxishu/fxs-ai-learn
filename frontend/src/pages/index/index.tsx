@@ -22,15 +22,8 @@ import {
   INPUT_MIN_LEN,
 } from '@/types/quiz'
 
-// Task8: 首页 6 个推荐 Chip（Task8 要求）
-const EXAMPLES = [
-  'Java 设计模式',
-  'RAG 检索增强生成',
-  'HTTP 与 HTTPS 区别',
-  'React Hooks 核心用法',
-  'Python 列表推导式',
-  'JavaScript 闭包',
-]
+const FREQUENT_HISTORY_LIMIT = 100
+const MAX_FREQUENT_TOPICS = 6
 
 export default function HomePage() {
   const input = useQuizStore(s => s.input)
@@ -54,7 +47,7 @@ export default function HomePage() {
     const wxLoginFlow = useUserStore.getState().wxLoginFlow
     if (!useUserStore.getState().isLoggedIn) await wxLoginFlow()
     if (useUserStore.getState().isLoggedIn) {
-      API.listQuizzes(1, 3).then(res => {
+      API.listQuizzes(1, FREQUENT_HISTORY_LIMIT).then(res => {
         if (res.code === 0 && res.data) setUserRecent(res.data.items || [])
       }).catch(() => { /* fallback to local history */ })
     } else {
@@ -68,7 +61,7 @@ export default function HomePage() {
       const state = useUserStore.getState()
       if (!state.isLoggedIn) await state.wxLoginFlow()
       if (useUserStore.getState().isLoggedIn) {
-        const res = await API.listQuizzes(1, 3)
+        const res = await API.listQuizzes(1, FREQUENT_HISTORY_LIMIT)
         if (res.code === 0 && res.data) setUserRecent(res.data.items || [])
       }
     }
@@ -77,7 +70,7 @@ export default function HomePage() {
 
   const recent = useMemo(() => {
     if (userRecent && userRecent.length) {
-      return userRecent.map(x => ({
+      return userRecent.slice(0, 3).map(x => ({
         id: x.quiz_id,
         title: x.title,
         correct: x.correct_count,
@@ -91,10 +84,51 @@ export default function HomePage() {
     return (history || []).slice(0, 3) as (HistoryItem & { _fromUser?: boolean; total_xp?: number })[]
   }, [userRecent, history])
 
+  const frequentTopics = useMemo(() => {
+    if (!isLoggedIn || !userRecent) return []
+    const topics = new Map<string, { title: string; quizId: string; count: number; latest: number }>()
+    for (const item of userRecent) {
+      const title = item.title.trim()
+      if (!title) continue
+      const createdAt = new Date(item.created_at).getTime() || 0
+      const existing = topics.get(title)
+      if (existing) {
+        existing.count += 1
+        if (createdAt > existing.latest) {
+          existing.latest = createdAt
+          existing.quizId = item.quiz_id
+        }
+      } else {
+        topics.set(title, { title, quizId: item.quiz_id, count: 1, latest: createdAt })
+      }
+    }
+    return Array.from(topics.values())
+      .sort((a, b) => b.count - a.count || b.latest - a.latest)
+      .slice(0, MAX_FREQUENT_TOPICS)
+  }, [isLoggedIn, userRecent])
+
   const canSubmit = input.trim().length >= INPUT_MIN_LEN && input.trim().length <= INPUT_MAX_LEN
 
-  const handleExample = (text: string) => {
-    setInput(text)
+  const handleFrequentTopic = async (quizId: string) => {
+    if (loading || !useUserStore.getState().isLoggedIn) return
+    Taro.showLoading({ title: '读取知识点...', mask: true })
+    try {
+      const res = await API.getQuizDetail(quizId)
+      if (res.code !== 0 || !res.data) {
+        toastError(res.message || '读取记录失败，请重试')
+        return
+      }
+      const text = res.data.user_input?.trim()
+      if (!text) {
+        toastError('这条记录没有保存原始知识点')
+        return
+      }
+      setInput(text)
+    } catch (_) {
+      toastError('读取记录失败，请重试')
+    } finally {
+      Taro.hideLoading()
+    }
   }
 
   const accuracyClass = (acc: number) =>
@@ -191,7 +225,7 @@ export default function HomePage() {
       <View className={styles.topBar}>
         <View className={styles.brand}>
           <Text>🐟</Text>
-          <Text>鱼皮 AI 闯关</Text>
+          <Text>智能 AI 闯关</Text>
         </View>
         <View className={styles.userBadgeWrap}>
           <Text className={styles.greetText}>Hi, {nickname}</Text>
@@ -222,22 +256,43 @@ export default function HomePage() {
           onChange={setInput}
           min={INPUT_MIN_LEN}
           max={INPUT_MAX_LEN}
-          minHeight={260}
+          minHeight={140}
           disabled={loading}
         />
 
-        <View className={styles.breadcrumbs}>
-          {EXAMPLES.map(ex => (
-            <Chip
-              key={ex}
-              color='soft-blue'
-              size='sm'
-              onClick={() => handleExample(ex)}
-            >
-              {ex}
-            </Chip>
-          ))}
+        <View className={styles.startActions}>
+          <AppButton
+            className={styles.primaryButton}
+            block
+            size='xl'
+            variant='primary'
+            loading={loading}
+            disabled={!canSubmit || loading}
+            onClick={onSubmit}
+          >
+            {loading ? 'AI 正在出题中...' : '🎯 开始闯关'}
+          </AppButton>
         </View>
+
+        {!!frequentTopics.length && (
+          <View className={styles.frequentTopics}>
+            <Text className={styles.frequentTitle}>常用出题记录</Text>
+            <Text className={styles.frequentHint}>按最近 100 条记录统计，点击回填知识点</Text>
+            <View className={styles.topicTags}>
+              {frequentTopics.map(topic => (
+                <View
+                  key={topic.title}
+                  className={styles.topicTag}
+                  onClick={() => handleFrequentTopic(topic.quizId)}
+                >
+                  <Chip color='soft-blue' size='sm'>
+                    {topic.title.length > 16 ? `${topic.title.slice(0, 16)}…` : topic.title} · {topic.count}次
+                  </Chip>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
       </View>
 
       <View className={styles.sectionTitle}>
@@ -279,19 +334,6 @@ export default function HomePage() {
         )}
       </View>
 
-      <View className={styles.footerActions}>
-        <AppButton
-          className={styles.primaryButton}
-          block
-          size='xl'
-          variant='primary'
-          loading={loading}
-          disabled={!canSubmit || loading}
-          onClick={onSubmit}
-        >
-          {loading ? 'AI 正在出题中...' : '🎯 开始闯关'}
-        </AppButton>
-      </View>
     </View>
   )
 }

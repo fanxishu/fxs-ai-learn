@@ -10,7 +10,7 @@ export default defineAppConfig({
   window: {
     backgroundTextStyle: 'light',
     navigationBarBackgroundColor: '#fff',
-    navigationBarTitleText: '鱼皮 AI 闯关',
+    navigationBarTitleText: '智能 AI 闯关',
     navigationBarTextStyle: 'black'
   },
   tabBar: {
