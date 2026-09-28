@@ -23,6 +23,13 @@ class Settings(BaseSettings):
 
     USE_MOCK_LLM: bool = True
 
+    TAVILY_API_KEY: Optional[str] = None
+    ENABLE_WEB_SEARCH: bool = True
+    TAVILY_SEARCH_MAX_RESULTS: int = 5
+    WEB_SEARCH_CONTEXT_MAX_CHARS: int = 4000
+    QUIZ_TASK_TIMEOUT_SECONDS: int = 60
+    QUIZ_TASK_POLL_INTERVAL_SECONDS: int = 2
+
     USER_INPUT_MIN_LEN: int = 5
     USER_INPUT_MAX_LEN: int = 500
     DEFAULT_QUESTION_COUNT: int = 5

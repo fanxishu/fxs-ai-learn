@@ -3,6 +3,8 @@ import type {
   ApiResponse,
   QuizGenerateRequest,
   QuizGenerateResult,
+  QuizGenerateTaskAccepted,
+  QuizGenerateTaskStatusData,
   ReportGenerateRequest,
   ReportGenerateResult,
 } from '@/types/quiz'
@@ -148,18 +150,73 @@ export function toastError(msg: string): void {
   Taro.showToast({ title: msg, icon: 'none', duration: 2000 })
 }
 
+const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
+
+const QUIZ_TASK_POLL_TIMEOUT_MS = 90_000
+
 /**
- * generateQuiz 统一失败处理：Task10 覆盖 3001/5001/5002/5003/Network 5 种 Toast。
- * 只在确定最终走 fallback mock 之前 Toast 一次（避免重复弹）
+ * generateQuiz：创建异步出题任务后轮询，直到 succeeded / failed / 超时。
+ * Toast 只在最终失败时弹一次，避免轮询中间态打扰用户。
  */
 export const API = {
+  async createQuizTask(
+    payload: QuizGenerateRequest,
+  ): Promise<ApiResponse<QuizGenerateTaskAccepted>> {
+    return request<QuizGenerateTaskAccepted>('/quiz/generate', payload)
+  },
+
+  async getQuizTaskStatus(
+    taskId: string,
+  ): Promise<ApiResponse<QuizGenerateTaskStatusData>> {
+    return request<QuizGenerateTaskStatusData>(`/quiz/tasks/${encodeURIComponent(taskId)}`, undefined, 'GET')
+  },
+
   async generateQuiz(payload: QuizGenerateRequest): Promise<ApiResponse<QuizGenerateResult>> {
-    const res = await request<QuizGenerateResult>('/quiz/generate', payload)
-    if (res.code === 0 && res.data) return res
-    const toast = codeToToast(res.code, res.message || '生成失败，请重试')
-    if (toast) toastError(toast)
-    console.error('[API] generateQuiz 失败 code=', res.code, 'msg=', res.message)
-    return res
+    const created = await API.createQuizTask(payload)
+    if (created.code !== 0 || !created.data?.task_id) {
+      const toast = codeToToast(created.code, created.message || '创建出题任务失败，请重试')
+      if (toast) toastError(toast)
+      console.error('[API] createQuizTask 失败 code=', created.code, 'msg=', created.message)
+      return {
+        code: created.code,
+        message: created.message || '创建出题任务失败，请重试',
+      }
+    }
+
+    const taskId = created.data.task_id
+    const intervalMs = Math.max(1, created.data.poll_interval_seconds || 2) * 1000
+    const deadline = Date.now() + QUIZ_TASK_POLL_TIMEOUT_MS
+
+    while (Date.now() < deadline) {
+      await sleep(intervalMs)
+      const statusRes = await API.getQuizTaskStatus(taskId)
+      if (statusRes.code !== 0 || !statusRes.data) {
+        const toast = codeToToast(statusRes.code, statusRes.message || '查询出题进度失败')
+        if (toast) toastError(toast)
+        console.error('[API] getQuizTaskStatus 失败 code=', statusRes.code, 'msg=', statusRes.message)
+        return {
+          code: statusRes.code,
+          message: statusRes.message || '查询出题进度失败',
+        }
+      }
+
+      const { status, result, error_message } = statusRes.data
+      if (status === 'succeeded' && result?.questions?.length) {
+        return { code: 0, message: 'ok', data: result }
+      }
+      if (status === 'failed') {
+        const msg = error_message || '生成题目失败，请重试'
+        toastError(msg)
+        console.error('[API] generateQuiz 任务失败 task_id=', taskId, 'msg=', msg)
+        return { code: ErrorCode.DEEPSEEK_RETRY_EXHAUSTED, message: msg }
+      }
+      // pending / running：继续轮询
+    }
+
+    const timeoutMsg = '出题超时，请重试'
+    toastError(timeoutMsg)
+    console.error('[API] generateQuiz 轮询超时 task_id=', taskId)
+    return { code: ErrorCode.DEEPSEEK_TIMEOUT, message: timeoutMsg }
   },
 
   async generateReport(

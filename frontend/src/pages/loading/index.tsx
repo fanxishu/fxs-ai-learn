@@ -17,7 +17,7 @@ interface Step {
 
 const STEPS: Step[] = [
   { key: 'analyse', title: '分析输入内容结构', desc: '识别关键知识点与概念边界' },
-  { key: 'augment', title: '调动 AI 知识库', desc: '结合 AI 训练数据中的权威信息' },
+  { key: 'augment', title: '联网检索参考资料', desc: '关键词搜索或网页提取，增强出题准确性' },
   { key: 'generate', title: '生成 5 道闯关题', desc: '混合单选 / 多选 / 判断，附解析' },
   { key: 'review', title: '校验题目格式', desc: '去重、检查答案与解析匹配' },
   { key: 'finish', title: '准备进入闯关', desc: '即将为你开启答题页面' },
@@ -149,7 +149,7 @@ export default function LoadingPage() {
         <Text className={styles.sub}>
           {useExisting
             ? '检测到未完成的闯关记录，正在恢复你的答题进度...'
-            : '预计需要 3~10 秒，请稍候片刻。AI 会为你量身生成 5 道闯关题 + 详细讲解。'}
+            : '正在创建出题任务并轮询结果，通常需要十几秒。请稍候，不要离开本页。'}
         </Text>
       </View>
 

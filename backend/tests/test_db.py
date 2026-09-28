@@ -5,12 +5,13 @@ import pytest
 from app.core import db as db_mod
 
 
-TABLE_NAMES = ["users", "quiz_sessions", "answer_records", "reports"]
+TABLE_NAMES = ["users", "quiz_sessions", "answer_records", "reports", "quiz_generation_tasks"]
 _CREATE_ATTRS = [
     "_CREATE_USERS_SQL",
     "_CREATE_QUIZ_SESSIONS_SQL",
     "_CREATE_ANSWER_RECORDS_SQL",
     "_CREATE_REPORTS_SQL",
+    "_CREATE_QUIZ_TASKS_SQL",
 ]
 
 
@@ -47,11 +48,11 @@ def test_tr23_all_sql_values_are_parametrized_no_fstrings():
 
 
 @pytest.mark.asyncio
-async def test_create_tables_executes_four_creates(db_pool_cur):
+async def test_create_tables_executes_five_creates(db_pool_cur):
     _, cur = db_pool_cur
     cur.execute.reset_mock()
     cur.fetchone.return_value = None
     cur.fetchall.return_value = []
     await db_mod.create_tables_if_not_exists()
     calls = [c for c in cur.execute.await_args_list if str(c.args[0]).strip().upper().startswith("CREATE TABLE")]
-    assert len(calls) == 4, f"should execute 4 CREATE TABLE, got {len(calls)}"
+    assert len(calls) == 5, f"should execute 5 CREATE TABLE, got {len(calls)}"

@@ -8,9 +8,14 @@ from app.core.auth import get_current_user_id_optional
 from app.core.config import settings
 from app.core.exceptions import ErrorCode, NotLoggedInError, SensitiveContentError, ValidationError as AppValidationError
 from app.models.common import ApiResponse, error_response, ok_response
-from app.models.quiz import QuizGenerateRequest
-from app.repositories import QuizSessionRepository
-from app.services.quiz_chain import QuizChainService
+from app.models.quiz import (
+    QuizGenerateRequest,
+    QuizGenerateTaskAccepted,
+    QuizGenerateTaskStatusData,
+    QuizGenerateResult,
+)
+from app.repositories import QuizTaskRepository
+from app.services.quiz_task_service import generate_task_id, schedule_quiz_generation_task
 from app.utils.content_filter import ContentFilter
 from app.utils.text_cleaner import clean_user_input
 
@@ -18,34 +23,6 @@ router = APIRouter(prefix="/quiz", tags=["quiz"])
 
 _content_filter = ContentFilter(file_path=settings.SENSITIVE_WORDS_FILE)
 _log = _logging.getLogger(__name__)
-
-
-async def _persist_quiz_if_logged_in(
-    user_id: int | None,
-    quiz_id: str,
-    title: str,
-    user_input: str,
-    questions_dump,
-) -> None:
-    if not user_id:
-        _log.info("Persist quiz skipped (anonymous) quiz_id=%s", quiz_id)
-        return
-    try:
-        await QuizSessionRepository.create(
-            quiz_id=quiz_id,
-            user_id=int(user_id),
-            title=title,
-            summary=None,
-            user_input=user_input,
-            questions_json=questions_dump,
-        )
-        _log.info("Persist quiz OK quiz_id=%s user_id=%s", quiz_id, user_id)
-    except Exception as exc:  # noqa: BLE001
-        import traceback as _tb
-        _log.error(
-            "Persist quiz FAILED (non-fatal) quiz_id=%s user_id=%s err=%s\nTB:\n%s",
-            quiz_id, user_id, exc, _tb.format_exc(),
-        )
 
 
 @router.post("/generate")
@@ -104,19 +81,56 @@ async def generate_quiz(
             data={"hits": hits},
         )
 
+    task_id = generate_task_id()
     try:
-        result = await QuizChainService.generate_quiz(req)
+        await QuizTaskRepository.create(
+            task_id=task_id,
+            user_id=int(user_id),
+            user_input=cleaned,
+            question_count=int(req.question_count),
+        )
+        schedule_quiz_generation_task(
+            task_id=task_id,
+            user_id=int(user_id),
+            request=req,
+            cleaned_input=cleaned,
+        )
     except Exception as exc:  # noqa: BLE001
-        _log.warning("Quiz generate chain failed: %s", exc)
-        return error_response(5001, "生成题目失败，请重试")
+        _log.warning("Quiz task create failed: %s", exc)
+        return error_response(5001, "创建出题任务失败，请重试")
 
-    result_dump = result.model_dump()
-    await _persist_quiz_if_logged_in(
-        user_id=user_id,
-        quiz_id=result.quiz_id,
-        title=result.title,
-        user_input=cleaned,
-        questions_dump=result_dump.get("questions"),
+    accepted = QuizGenerateTaskAccepted(
+        task_id=task_id,
+        status="pending",
+        poll_interval_seconds=settings.QUIZ_TASK_POLL_INTERVAL_SECONDS,
     )
+    return ok_response(accepted.model_dump(), message="ok")
 
-    return ok_response(result_dump, message="ok")
+
+@router.get("/tasks/{task_id}")
+async def get_quiz_task_status(
+    task_id: str,
+    user_id: int | None = Depends(get_current_user_id_optional),
+) -> ApiResponse:
+    if not user_id:
+        return error_response(
+            int(ErrorCode.NOT_LOGGED_IN),
+            NotLoggedInError.message,
+        )
+    task = await QuizTaskRepository.get_by_task_id_for_user(task_id, int(user_id))
+    if not task:
+        return error_response(4001, "资源不存在")
+
+    result = None
+    if isinstance(task.get("result_json"), dict):
+        try:
+            result = QuizGenerateResult.model_validate(task["result_json"])
+        except Exception:  # noqa: BLE001
+            result = None
+    data = QuizGenerateTaskStatusData(
+        task_id=task["task_id"],
+        status=task["status"],
+        result=result,
+        error_message=task.get("error_message"),
+    )
+    return ok_response(data.model_dump(), message="ok")

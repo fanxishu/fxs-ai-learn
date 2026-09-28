@@ -13,6 +13,7 @@ export interface AppButtonProps {
   block?: boolean
   disabled?: boolean
   loading?: boolean
+  formType?: 'submit' | 'reset'
   onClick?: () => void | Promise<void>
   className?: string
 }
@@ -24,6 +25,7 @@ export default function AppButton ({
   block = false,
   disabled = false,
   loading = false,
+  formType,
   onClick,
   className = '',
 }: AppButtonProps) {
@@ -50,6 +52,7 @@ export default function AppButton ({
       className={cls}
       disabled={disabled}
       loading={loading}
+      formType={formType}
       onClick={handle}
     >
       {children}

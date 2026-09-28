@@ -5,10 +5,8 @@ import classnames from 'classnames'
 import styles from './index.module.scss'
 import {
   AppButton,
-  Chip,
   NoteCard,
   ProgressTrack,
-  RingProgress,
   StateBadge,
 } from '@/components'
 import { useQuizStore } from '@/store/quiz'
@@ -119,7 +117,10 @@ export default function ReportPage() {
           <Text className={styles.title}>{quiz?.title || `${input?.slice(0, 12) || 'AI'} 闯关报告`}</Text>
           <Text className={styles.sub}>{report.three_line_summary?.[0] || '你的学习成果已经生成！'}</Text>
         </View>
-        <RingProgress accuracy={acc} size={150} strokeWidth={12} />
+        <View className={classnames(styles.scoreBadge, accClass)}>
+          <Text className={styles.scoreNum}>{acc}</Text>
+          <Text className={styles.scoreUnit}>分</Text>
+        </View>
       </View>
 
       <View className={styles.stats}>

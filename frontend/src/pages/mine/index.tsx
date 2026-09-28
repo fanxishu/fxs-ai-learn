@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { View, Text, Input, Button, Image } from '@tarojs/components'
+import { View, Text, Input, Button, Image, Form } from '@tarojs/components'
 import Taro, { useDidShow } from '@tarojs/taro'
 import classnames from 'classnames'
 import styles from './index.module.scss'
@@ -156,8 +156,10 @@ export default function MinePage() {
     }
   }
 
-  const saveNickname = async () => {
-    const name = nickInput.trim()
+  const saveNickname = async (value: unknown) => {
+    if (loading) return
+    // Use the native form value after WeChat nickname selection and review.
+    const name = typeof value === 'string' ? value.trim() : ''
     if (!name) {
       toastError('昵称不能为空')
       return
@@ -317,20 +319,32 @@ export default function MinePage() {
 
       {nickModalOpen && (
         <View className={styles.modalMask} onClick={() => setNickModalOpen(false)}>
-          <View className={styles.modalCard} onClick={e => e.stopPropagation()}>
+          <Form
+            className={styles.modalCard}
+            onClick={e => e.stopPropagation()}
+            onSubmit={e => saveNickname(e.detail.value?.nickname)}
+          >
             <View className={styles.modalHeader}>
               <Text className={styles.modalTitle}>修改昵称</Text>
-              <Text className={styles.modalSubtitle}>取一个你喜欢的名字</Text>
+              <Text className={styles.modalSubtitle}>
+                {isWeapp ? '点击输入框可选用微信昵称，也可自行填写' : '取一个你喜欢的名字'}
+              </Text>
             </View>
             <View className={styles.modalField}>
               <Input
+                name='nickname'
+                type={isWeapp ? 'nickname' : 'text'}
                 className={classnames(styles.modalInput, nickInputFocused && styles.modalInputFocused)}
                 placeholder='请输入昵称'
                 placeholderClass={styles.modalPlaceholder}
                 value={nickInput}
                 onInput={e => setNickInput(e.detail.value)}
                 onFocus={() => setNickInputFocused(true)}
-                onBlur={() => setNickInputFocused(false)}
+                onBlur={e => {
+                  setNickInput(e.detail.value)
+                  setNickInputFocused(false)
+                }}
+                disabled={loading}
                 maxlength={20}
               />
               <Text className={styles.modalCount}>{nickInput.length}/20</Text>
@@ -349,12 +363,13 @@ export default function MinePage() {
                 size='lg'
                 className={classnames(styles.modalBtn, styles.modalSave)}
                 loading={loading}
-                onClick={saveNickname}
+                disabled={loading}
+                formType='submit'
               >
                 保存
               </AppButton>
             </View>
-          </View>
+          </Form>
         </View>
       )}
     </View>

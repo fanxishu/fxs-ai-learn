@@ -117,6 +117,26 @@ CREATE TABLE IF NOT EXISTS reports (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 """
 
+_CREATE_QUIZ_TASKS_SQL = """
+CREATE TABLE IF NOT EXISTS quiz_generation_tasks (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    task_id VARCHAR(64) NOT NULL UNIQUE,
+    user_id BIGINT UNSIGNED NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'pending',
+    user_input TEXT NOT NULL,
+    question_count INT NOT NULL DEFAULT 0,
+    result_json JSON NULL,
+    error_message VARCHAR(500) NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    finished_at DATETIME NULL,
+    INDEX idx_quiz_tasks_user_id (user_id),
+    INDEX idx_quiz_tasks_status (status),
+    INDEX idx_quiz_tasks_created_at (created_at),
+    CONSTRAINT fk_quiz_tasks_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+"""
+
 
 async def create_tables_if_not_exists() -> None:
     pool = get_pool()
@@ -125,6 +145,7 @@ async def create_tables_if_not_exists() -> None:
         ("quiz_sessions", _CREATE_QUIZ_SESSIONS_SQL),
         ("answer_records", _CREATE_ANSWER_RECORDS_SQL),
         ("reports", _CREATE_REPORTS_SQL),
+        ("quiz_generation_tasks", _CREATE_QUIZ_TASKS_SQL),
     ]
     async with pool.acquire() as conn:
         async with conn.cursor() as cur:
@@ -151,4 +172,4 @@ async def create_tables_if_not_exists() -> None:
                     logger.info("Adding missing column %s.%s", table, column)
                     await cur.execute(ddl)
             await conn.commit()
-    logger.info("All 4 tables ensured + migrations applied")
+    logger.info("All tables ensured + migrations applied")

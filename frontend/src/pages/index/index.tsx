@@ -17,7 +17,6 @@ import { validateAndToast } from '@/services/contentFilter'
 import type { HistoryItem, Question } from '@/types/quiz'
 import type { QuizHistoryItem as UserQuizHistoryItem } from '@/types/user'
 import {
-  DEFAULT_QUESTION_COUNT,
   INPUT_MAX_LEN,
   INPUT_MIN_LEN,
 } from '@/types/quiz'
@@ -198,27 +197,18 @@ export default function HomePage() {
     }
     setLoading(true)
     try {
-      const res = await API.generateQuiz({
-        user_input: text,
-        question_count: DEFAULT_QUESTION_COUNT,
-      })
-      if (res.code !== 0 || !res.data) {
-        toastError(res.message || '生成失败，请重试')
-        return
-      }
+      // 首页只负责校验与跳转；真正的“创建任务 + 轮询”在 loading 页完成，避免阻塞首页。
       reset()
       setInput(text)
-      setQuiz(res.data)
-      saveQuizSession({ quiz: res.data })
-      console.log('[HomePage] generated quiz_id =', res.data.quiz_id, 'questions =', res.data.questions.length)
+      console.log('[HomePage] navigate to loading for async quiz generation')
       Taro.navigateTo({ url: '/pages/loading/index' })
     } catch (err) {
-      console.error('[HomePage] generateQuiz error:', err)
-      toastError('生成失败，请稍后再试')
+      console.error('[HomePage] navigate loading error:', err)
+      toastError('跳转失败，请稍后再试')
     } finally {
       setLoading(false)
     }
-  }, [input, reset, setInput, setQuiz, saveQuizSession])
+  }, [input, reset, setInput])
 
   return (
     <View className={styles.page}>

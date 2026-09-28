@@ -1,6 +1,6 @@
-import json
 import sys
 from pathlib import Path
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
@@ -16,55 +16,30 @@ def _bearer(user_id: int = 1, openid: str = "oid_test") -> dict[str, str]:
     return {"Authorization": f"Bearer {tok}"}
 
 
-class TestQuizGenerateHappyPath:
+class TestQuizGenerateTaskCreation:
     @pytest.mark.asyncio
-    async def test_quiz_generate_200_ok_code_0(self, client):
+    async def test_quiz_generate_returns_task_metadata(self, client):
         payload = {"user_input": "Python 基础入门语法与数据类型", "question_count": 5}
-        resp = await client.post("/api/v1/quiz/generate", json=payload, headers=_bearer(1))
+        with (
+            patch("app.api.v1.routes.quiz.generate_task_id", return_value="qtask-test-1"),
+            patch("app.api.v1.routes.quiz.schedule_quiz_generation_task"),
+        ):
+            resp = await client.post("/api/v1/quiz/generate", json=payload, headers=_bearer(1))
         assert resp.status_code == 200
         body = resp.json()
         assert body["code"] == 0
-        assert body["message"] == "ok" or body["message"]
-        assert "data" in body and body["data"] is not None
-        assert body["data"]["quiz_id"]
-        assert body["data"]["title"]
-        qs = body["data"]["questions"]
-        assert isinstance(qs, list) and 3 <= len(qs) <= 5
+        assert body["data"]["task_id"] == "qtask-test-1"
+        assert body["data"]["status"] == "pending"
+        assert body["data"]["poll_interval_seconds"] >= 1
+        assert "result" not in body["data"]
 
     @pytest.mark.asyncio
-    async def test_quiz_generate_distribution_has_all_three_types(self, client):
-        payload = {"user_input": "Python 基础入门语法与数据类型"}
-        resp = await client.post("/api/v1/quiz/generate", json=payload, headers=_bearer(1))
+    async def test_quiz_generate_missing_login_returns_2003(self, client):
+        payload = {"user_input": "Python 基础入门语法与数据类型", "question_count": 5}
+        resp = await client.post("/api/v1/quiz/generate", json=payload)
+        assert resp.status_code == 200
         body = resp.json()
-        qs = body["data"]["questions"]
-        counts = {"single": 0, "multiple": 0, "judge": 0}
-        for q in qs:
-            counts[q["question_type"]] += 1
-        assert counts["single"] >= 1
-        assert counts["multiple"] >= 1
-        assert counts["judge"] >= 1
-
-    @pytest.mark.asyncio
-    async def test_quiz_generate_question_count_3_matches(self, client):
-        payload = {"user_input": "Python 函数定义与调用示例", "question_count": 3}
-        resp = await client.post("/api/v1/quiz/generate", json=payload, headers=_bearer(1))
-        body = resp.json()
-        assert body["code"] == 0
-        assert len(body["data"]["questions"]) == 3
-
-    @pytest.mark.asyncio
-    async def test_quiz_generate_every_question_required_fields(self, client):
-        payload = {"user_input": "Python 列表 list 常用操作方法"}
-        resp = await client.post("/api/v1/quiz/generate", json=payload, headers=_bearer(1))
-        body = resp.json()
-        qs = body["data"]["questions"]
-        for q in qs:
-            assert q["question_id"].strip() != ""
-            assert q["stem"].strip() != ""
-            assert "question_type" in q
-            assert isinstance(q["options"], list) and len(q["options"]) >= 2
-            assert q["knowledge_point"].strip() != ""
-            assert q["explanation"].strip() != ""
+        assert body["code"] == 2003
 
 
 class TestQuizGenerateInputValidation:
@@ -104,12 +79,17 @@ class TestQuizGenerateInputValidation:
 
 class TestQuizGenerateCleanerAndFilter:
     @pytest.mark.asyncio
-    async def test_quiz_generate_strips_html_and_still_succeeds_code_0(self, client):
+    async def test_quiz_generate_strips_html_and_still_creates_task(self, client):
         payload = {"user_input": "<p>Python <b>列表</b> 推导式<br/>用法示例</p>", "question_count": 5}
-        resp = await client.post("/api/v1/quiz/generate", json=payload, headers=_bearer(1))
+        with (
+            patch("app.api.v1.routes.quiz.generate_task_id", return_value="qtask-html"),
+            patch("app.api.v1.routes.quiz.schedule_quiz_generation_task"),
+        ):
+            resp = await client.post("/api/v1/quiz/generate", json=payload, headers=_bearer(1))
         assert resp.status_code == 200
         body = resp.json()
         assert body["code"] == 0
+        assert body["data"]["task_id"] == "qtask-html"
 
     @pytest.mark.asyncio
     async def test_quiz_generate_sensitive_赌博_code_4001(self, client):
@@ -130,3 +110,106 @@ class TestQuizGenerateCleanerAndFilter:
         assert isinstance(body["data"], dict)
         assert isinstance(body["data"].get("hits"), list)
         assert len(body["data"]["hits"]) >= 2
+
+
+class TestQuizTaskStatus:
+    @pytest.mark.asyncio
+    async def test_get_task_status_running(self, client):
+        with patch(
+            "app.api.v1.routes.quiz.QuizTaskRepository.get_by_task_id_for_user",
+            new=AsyncMock(
+                return_value={
+                    "task_id": "qtask-1",
+                    "status": "running",
+                    "result_json": None,
+                    "error_message": None,
+                }
+            ),
+        ):
+            resp = await client.get("/api/v1/quiz/tasks/qtask-1", headers=_bearer(1))
+        body = resp.json()
+        assert body["code"] == 0
+        assert body["data"]["status"] == "running"
+        assert body["data"]["result"] is None
+
+    @pytest.mark.asyncio
+    async def test_get_task_status_succeeded_returns_result(self, client):
+        result_json = {
+            "quiz_id": "quiz_1",
+            "title": "测试题目",
+            "questions": [
+                {
+                    "question_id": "q1",
+                    "stem": "1+1=?",
+                    "question_type": "single",
+                    "options": [{"key": "A", "text": "2"}, {"key": "B", "text": "3"}],
+                    "answer": "A",
+                    "knowledge_point": "加法",
+                    "explanation": "1+1=2",
+                },
+                {
+                    "question_id": "q2",
+                    "stem": "Python 是解释型语言",
+                    "question_type": "judge",
+                    "options": [{"key": "T", "text": "正确"}, {"key": "F", "text": "错误"}],
+                    "answer": "T",
+                    "knowledge_point": "Python",
+                    "explanation": "Python 通常被视为解释型语言。",
+                },
+                {
+                    "question_id": "q3",
+                    "stem": "哪些是 Python 集合类型？",
+                    "question_type": "multiple",
+                    "options": [{"key": "A", "text": "set"}, {"key": "B", "text": "dict"}],
+                    "answer": ["A", "B"],
+                    "knowledge_point": "集合",
+                    "explanation": "set 和 dict 都与集合概念相关。",
+                },
+            ],
+        }
+        with patch(
+            "app.api.v1.routes.quiz.QuizTaskRepository.get_by_task_id_for_user",
+            new=AsyncMock(
+                return_value={
+                    "task_id": "qtask-2",
+                    "status": "succeeded",
+                    "result_json": result_json,
+                    "error_message": None,
+                }
+            ),
+        ):
+            resp = await client.get("/api/v1/quiz/tasks/qtask-2", headers=_bearer(1))
+        body = resp.json()
+        assert body["code"] == 0
+        assert body["data"]["status"] == "succeeded"
+        assert body["data"]["result"]["quiz_id"] == "quiz_1"
+        assert len(body["data"]["result"]["questions"]) == 3
+
+    @pytest.mark.asyncio
+    async def test_get_task_status_failed_returns_error_message(self, client):
+        with patch(
+            "app.api.v1.routes.quiz.QuizTaskRepository.get_by_task_id_for_user",
+            new=AsyncMock(
+                return_value={
+                    "task_id": "qtask-3",
+                    "status": "failed",
+                    "result_json": None,
+                    "error_message": "生成题目失败，请重试",
+                }
+            ),
+        ):
+            resp = await client.get("/api/v1/quiz/tasks/qtask-3", headers=_bearer(1))
+        body = resp.json()
+        assert body["code"] == 0
+        assert body["data"]["status"] == "failed"
+        assert body["data"]["error_message"] == "生成题目失败，请重试"
+
+    @pytest.mark.asyncio
+    async def test_get_task_status_other_user_returns_4001(self, client):
+        with patch(
+            "app.api.v1.routes.quiz.QuizTaskRepository.get_by_task_id_for_user",
+            new=AsyncMock(return_value=None),
+        ):
+            resp = await client.get("/api/v1/quiz/tasks/qtask-404", headers=_bearer(2))
+        body = resp.json()
+        assert body["code"] == 4001

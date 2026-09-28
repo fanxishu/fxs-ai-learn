@@ -6,6 +6,7 @@ import pytest
 from app.repositories import (
     UserRepository,
     QuizSessionRepository,
+    QuizTaskRepository,
     AnswerRecordRepository,
     ReportRepository,
 )
@@ -116,3 +117,58 @@ async def test_tr_report_create_json_serialized(db_pool_cur):
     assert "insert into reports" in normalized_sql
     stored_report = args[1][2]
     assert isinstance(stored_report, str) and "继续加油" in stored_report
+
+
+@pytest.mark.asyncio
+async def test_tr_quiz_task_create_uses_all_params(db_pool_cur):
+    _, cur = db_pool_cur
+    cur.execute.reset_mock()
+    await QuizTaskRepository.create(
+        task_id="qtask-1",
+        user_id=8,
+        user_input="Harness Engineering",
+        question_count=5,
+    )
+    args = cur.execute.await_args_list[0].args
+    assert str(args[0]).upper().startswith("INSERT INTO QUIZ_GENERATION_TASKS")
+    vals = args[1]
+    assert vals == ("qtask-1", 8, "pending", "Harness Engineering", 5)
+
+
+@pytest.mark.asyncio
+async def test_tr_quiz_task_mark_succeeded_serializes_json(db_pool_cur):
+    _, cur = db_pool_cur
+    cur.execute.reset_mock()
+    await QuizTaskRepository.mark_succeeded(
+        task_id="qtask-2",
+        user_id=8,
+        result_json={"quiz_id": "quiz_1", "title": "T"},
+    )
+    args = cur.execute.await_args_list[0].args
+    normalized_sql = args[0].lower().replace("`", " ")
+    assert "update quiz_generation_tasks" in normalized_sql
+    assert args[1][0] == "succeeded"
+    assert "\"quiz_id\": \"quiz_1\"" in args[1][1]
+
+
+@pytest.mark.asyncio
+async def test_tr_quiz_task_get_by_task_id_for_user_maps_result_json(db_pool_cur):
+    _, cur = db_pool_cur
+    cur.execute.reset_mock()
+    cur.fetchone.return_value = (
+        1,
+        "qtask-3",
+        9,
+        "succeeded",
+        "Python 新特性",
+        4,
+        "{\"quiz_id\": \"quiz_9\", \"title\": \"新题目\"}",
+        None,
+        datetime(2026, 3, 1, 10, 0, 0),
+        datetime(2026, 3, 1, 10, 1, 0),
+        datetime(2026, 3, 1, 10, 2, 0),
+    )
+    task = await QuizTaskRepository.get_by_task_id_for_user("qtask-3", 9)
+    assert task["task_id"] == "qtask-3"
+    assert task["status"] == "succeeded"
+    assert task["result_json"]["quiz_id"] == "quiz_9"

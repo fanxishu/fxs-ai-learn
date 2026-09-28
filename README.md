@@ -116,14 +116,21 @@ pnpm dev:weapp
 
 ## 一键启动脚本（推荐）
 
+日常联调请优先看：**[docs/本地启动操作手册.md](./docs/本地启动操作手册.md)**。
+
 ```powershell
 # 在项目根目录
 .\scripts\start-dev.ps1
+# 或双击 start-dev.bat
+
+# 停止
+.\scripts\stop-dev.ps1
 ```
 
-并行启动：
-- Job 1：backend uvicorn 8000（USE_MOCK_LLM=true）
-- Job 2：frontend pnpm dev:weapp
+会自动检查并启动 MySQL（默认 `C:\ruanjian\mysql`），再分别打开后端 / 前端独立窗口：
+
+- 后端：`uvicorn` → http://127.0.0.1:8000
+- 前端：`npm run dev:weapp` → 产物 `frontend/dist`（导入微信开发者工具）
 
 ## 核心业务闭环
 

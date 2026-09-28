@@ -7,6 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 from app.models.common import BaseSchema
 
 QuestionType = Literal["single", "multiple", "judge"]
+QuizTaskStatus = Literal["pending", "running", "succeeded", "failed"]
 
 
 class QuizOption(BaseSchema):
@@ -82,6 +83,7 @@ class Question(BaseSchema):
 class QuizGenerateRequest(BaseSchema):
     user_input: str = Field(..., min_length=5, max_length=500)
     question_count: Optional[Annotated[int, Field(ge=3, le=5)]] = Field(default=5)
+    knowledge_summary: Optional[str] = Field(default=None, max_length=4000)
 
 
 class QuizGenerateResult(BaseSchema):
@@ -102,3 +104,16 @@ class QuizGenerateResult(BaseSchema):
         if counts["judge"] < 1:
             raise ValueError("题型分布需包含至少 1 道判断题")
         return v
+
+
+class QuizGenerateTaskAccepted(BaseSchema):
+    task_id: str = Field(..., min_length=1, max_length=64)
+    status: QuizTaskStatus
+    poll_interval_seconds: Annotated[int, Field(ge=1, le=60)] = 2
+
+
+class QuizGenerateTaskStatusData(BaseSchema):
+    task_id: str = Field(..., min_length=1, max_length=64)
+    status: QuizTaskStatus
+    result: Optional[QuizGenerateResult] = None
+    error_message: Optional[str] = Field(default=None, max_length=500)

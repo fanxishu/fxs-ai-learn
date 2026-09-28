@@ -2,16 +2,16 @@
 
 .wrap {
   position: relative;
-}
-
-.ring {
-  width: 100%;
-  height: 100%;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 10rpx 28rpx rgba(44, 30, 9, 0.16);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .inner {
-  position: absolute;
-  inset: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -19,19 +19,19 @@
 }
 
 .num {
-  font-size: 192rpx;
-  font-weight: 900;
+  font-size: 56rpx;
+  font-weight: 800;
   line-height: 1;
   color: $color-primary;
-  background: $color-primary-button-gradient;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
 }
 
 .unit {
-  font-size: 64rpx;
-  color: $color-text-secondary;
+  margin-top: 6rpx;
+  font-size: 22rpx;
   font-weight: 600;
-  margin-top: 16rpx;
+  color: $color-text-tertiary;
 }
+
+.high .num { color: $color-mastery-high; }
+.mid .num { color: $color-mastery-mid; }
+.low .num { color: $color-mastery-low; }

@@ -33,6 +33,21 @@ export interface QuizGenerateRequest {
   question_count?: number
 }
 
+export type QuizTaskStatus = 'pending' | 'running' | 'succeeded' | 'failed'
+
+export interface QuizGenerateTaskAccepted {
+  task_id: string
+  status: QuizTaskStatus
+  poll_interval_seconds: number
+}
+
+export interface QuizGenerateTaskStatusData {
+  task_id: string
+  status: QuizTaskStatus
+  result?: QuizGenerateResult | null
+  error_message?: string | null
+}
+
 export interface QuizGenerateResult {
   quiz_id: string
   title?: string

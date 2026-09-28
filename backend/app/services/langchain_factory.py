@@ -120,7 +120,12 @@ class DeepSeekQuizLLM:
                 + escaped_schema
                 + "\n```\n"
             )
-            human = "学习主题：\n{user_input}\n\n请直接输出符合 Schema 的 JSON 对象。"
+            human = (
+                "学习主题：\n{user_input}\n\n"
+                "联网搜索 / 页面提取得到的参考资料：\n{knowledge_summary}\n\n"
+                "请优先依据参考资料理解主题；如果参考资料为空，再依据学习主题本身出题。"
+                "请直接输出符合 Schema 的 JSON 对象。"
+            )
 
             prompt = ChatPromptTemplate.from_messages(
                 [("system", system), ("human", human)]
@@ -136,7 +141,12 @@ class DeepSeekQuizLLM:
             ).bind(response_format={"type": "json_object"})
 
             chain = prompt | llm
-            raw_msg = await chain.ainvoke({"user_input": request.user_input})
+            raw_msg = await chain.ainvoke(
+                {
+                    "user_input": request.user_input,
+                    "knowledge_summary": request.knowledge_summary or "无可用联网资料",
+                }
+            )
             content = getattr(raw_msg, "content", None) or ""
             if not isinstance(content, str) or not content.strip():
                 logger.warning("DeepSeekQuizLLM empty content returned")
